@@ -12,3 +12,9 @@ column-set{gap:var(--column-gap,1rem)}
 @media(min-width:761px){column-unit[span]{flex-basis:calc((100% + var(--column-gap,1rem))*var(--span)/12 - var(--column-gap,1rem))}}
 :is(.gallery,column-set)+column-set{margin-top:var(--column-gap,1rem)}
 column-set+.gallery{margin-top:var(--gallery-gap,.7rem)}
+.email-contact{margin:.75rem 0 1rem;max-width:24rem;padding:.8rem;border:1px solid #ddd;background:#fff}
+.email-contact[hidden]{display:none}
+.email-contact input{display:block;width:100%;min-width:0;margin:0 0 .65rem;padding:0;border:0;background:transparent;color:inherit;font:inherit}
+.email-contact button{border:1px solid #aaa;background:#fff;color:inherit;font:inherit;padding:.35rem .6rem;cursor:pointer}
+.email-contact p{margin:.6rem 0 0;color:#777}
+.email-contact p:empty{display:none}
