@@ -18,3 +18,22 @@ column-set+.gallery{margin-top:var(--gallery-gap,.7rem)}
 .email-contact button{border:1px solid #aaa;background:#fff;color:inherit;font:inherit;padding:.35rem .6rem;cursor:pointer}
 .email-contact p{margin:.6rem 0 0;color:#777}
 .email-contact p:empty{display:none}
+/* Quiet, consistently spaced project navigation. */
+aside{font-size:clamp(11px,.82vw,13px);line-height:1.4;padding-bottom:5rem}
+.nav-header{margin-bottom:2.4rem;max-width:26rem}
+.nav-brand{display:block;width:max-content;font-weight:600;letter-spacing:.02em;margin-bottom:1rem}
+.nav-tools{display:flex;flex-wrap:wrap;gap:.5rem 1.3rem}
+.nav-tools>a{color:#777}
+.nav-tools .email-contact{flex-basis:100%;max-width:100%;margin:.3rem 0 0}
+.nav-section{margin:0 0 1.7rem;max-width:26rem}
+.nav-section h2{font:inherit;font-size:.88em;font-weight:400;color:#969696;letter-spacing:.02em;margin:0 0 .65rem}
+aside .nav-section ul{list-style:none;padding:0;margin:0}
+.nav-section li{margin:0;padding:0}
+.nav-section li>a,.nav-unavailable{display:block;position:relative;padding:.2rem 1.5rem .2rem 0;color:#646464;line-height:1.4}
+.nav-section a:hover,.nav-tools>a:hover{color:#161616;text-decoration:none}
+.nav-section a[aria-current=page]{color:#161616;font-weight:600}
+.nav-section a[aria-current=page]::after{content:'←';position:absolute;right:0;font-weight:400}
+.nav-unavailable{color:#b5b5b5}
+.nav-note{font-size:.85em;line-height:1.45;color:#aaa;margin:2rem 0 0;max-width:26rem}
+@media(max-width:760px){aside{font-size:13px;padding-bottom:2rem}.nav-header{margin-bottom:2rem}.nav-header .nav-brand{display:none}.nav-section{margin-bottom:2rem;max-width:none}.nav-section li>a,.nav-unavailable{min-height:34px;padding:.5rem 1.5rem .5rem 0}.nav-section h2{margin-bottom:.6rem}.nav-note{margin:2rem 0}.nav-tools{max-width:26rem}}
+.nav-footer{position:static;margin-top:1.6rem;padding:0;font-size:.8em}
