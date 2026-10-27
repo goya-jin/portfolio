@@ -2,6 +2,7 @@
 from pathlib import Path
 from datetime import date
 from html import escape as e
+import hashlib
 import json
 import re
 import shutil
@@ -30,11 +31,12 @@ def load_posts():
 
 def page(title, body, depth=0, current=''):
     prefix = '../' * depth
+    css_version = hashlib.sha256((DEST / "writing.css").read_bytes()).hexdigest()[:12]
     nav = ' · '.join(f'<a href="{href}"' + (' aria-current="page"' if label == current else '') + f'>{label}</a>' for label, href in [('Portfolio', prefix+'../index.html'), ('Posts', prefix+'index.html'), ('Archive', prefix+'archive.html'), ('About', prefix+'../info.html')])
     return f'''<!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{e(title)} — Goya Jin</title><meta name="description" content="Goya Jin의 글과 기록.">
-<link rel="stylesheet" href="{prefix}writing.css"></head>
+<link rel="stylesheet" href="{prefix}writing.css?v={css_version}"></head>
 <body><header><p><a href="{prefix}index.html">~goya jin</a></p><nav aria-label="주요 메뉴">{nav}</nav></header>
 <main id="content">{body}</main><footer><hr><p>Goya Jin · <a href="mailto:09190kk@gmail.com">Email</a></p></footer></body></html>'''
 
