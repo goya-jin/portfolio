@@ -1,14 +1,15 @@
-/* Plain personal-web typography inspired by bjh21.me.uk. */
-html { color-scheme: light; }
-body { margin: 8px; background: white; color: black; font-family: "Times New Roman", "Noto Serif KR", serif; font-size: 16px; line-height: 1.5; overflow-wrap: anywhere; }
+/* Match portfolio typography while preserving the writing layout. */
+html { color-scheme: light; font-size: 13px; }
+@media (min-width: 761px) { html { font-size: clamp(10px, 1.44vh, 14px); } }
+body { margin: 8px; background: white; color: #262626; font-family: Helvetica, Arial, sans-serif; font-size: 1rem; font-weight: 400; line-height: 1.5; overflow-wrap: anywhere; }
 header, main, footer { max-width: 74ch; }
 header { margin-bottom: 2em; }
-header > p { font-size: 1.25em; font-weight: bold; }
-a { color: #0000ee; text-decoration: underline; }
-a:visited { color: #551a8b; }
+header > p { font-size: 1rem; font-weight: 600; }
+a { color: inherit; text-decoration: underline; }
+a:visited { color: inherit; }
 a:focus-visible { outline: 2px solid; outline-offset: 3px; }
-h1 { font-size: 2em; line-height: 1.2; }
-h2 { font-size: 1.5em; }
+h1, h2 { font-size: 1.2rem; font-weight: 500; line-height: 1.2; }
+b, strong { font-weight: 600; }
 li { margin-block: .3em; }
 time { font-variant-numeric: tabular-nums; }
 footer { margin-top: 3em; }
