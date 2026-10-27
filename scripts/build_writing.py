@@ -32,7 +32,7 @@ def load_posts():
 def page(title, body, depth=0, current=''):
     prefix = '../' * depth
     css_version = hashlib.sha256((DEST / "writing.css").read_bytes()).hexdigest()[:12]
-    nav = ' · '.join(f'<a href="{href}"' + (' aria-current="page"' if label == current else '') + f'>{label}</a>' for label, href in [('Portfolio', prefix+'../index.html'), ('Posts', prefix+'index.html'), ('About', prefix+'../info.html')])
+    nav = ' · '.join(f'<a href="{href}"' + (' aria-current="page"' if label == current else '') + f'>{label}</a>' for label, href in [('About', prefix+'../info.html'), ('Posts', prefix+'index.html'), ('Portfolio', prefix+'../index.html')])
     return f'''<!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{e(title)} — Goya Jin</title><meta name="description" content="Goya Jin의 글과 기록.">
