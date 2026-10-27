@@ -1,0 +1,5 @@
+exclude:
+  - content
+  - scripts
+  - requirements-writing.txt
+  - WRITING.md
