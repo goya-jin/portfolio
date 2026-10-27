@@ -39,7 +39,7 @@ def page(title, body, depth=0, current=''):
 <title>{e(title)} — Goya Jin</title><meta name="description" content="Goya Jin의 글과 기록.">
 <link rel="stylesheet" href="{prefix}writing.css?v={css_version}"></head>
 <body><header><p><a href="{prefix}index.html">~goya jin</a></p><nav aria-label="주요 메뉴">{nav}</nav></header>
-<main id="content">{body}</main><footer><hr><p>Goya Jin · <a href="mailto:09190kk@gmail.com">Email</a> · <a href="{prefix}../admin/index.html">글쓰기</a></p></footer></body></html>'''
+<main id="content">{body}</main><footer><hr><p>Goya Jin · <a href="mailto:09190kk@gmail.com">Email</a></p></footer></body></html>'''
 
 def row(p):
     return f'<li><time datetime="{p["date"]}">{p["date"]}</time> — <a href="{p["slug"]}/index.html">{e(p["title"])}</a></li>'

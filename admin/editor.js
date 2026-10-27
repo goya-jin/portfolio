@@ -95,6 +95,8 @@ $('connect').onclick = async () => {
   const candidate = new GitHubClient(key); $('token').value = ''; setBusy(true); status('GitHub 연결 확인 중…');
   try {
     const user = await candidate.connect(); client = candidate;
+    await restoreOwnerDraft();
+    $('editor').hidden = false; $('new-post').hidden = false;
     $('connection-state').textContent = `${user.login} 연결됨 · ${REPO}`;
     $('connect-form').hidden = true; $('disconnect').hidden = false; $('existing-posts').hidden = false;
     status('연결되었습니다. 작성한 글을 게시할 수 있습니다.', 'success');
@@ -105,7 +107,13 @@ $('connect').onclick = async () => {
   } finally { setBusy(false); }
 };
 $('disconnect').onclick = () => {
+  clearTimeout(saveTimer);
   client?.disconnect(); client = null; generation++;
+  $('preview-dialog').close(); $('publish-dialog').close();
+  $('editor').hidden = true; $('new-post').hidden = true;
+  $('editor').reset(); attachments = []; revokeURLs(); renderFiles();
+  editPath = null; originalSha = null; slug = null; dirty = false;
+  $('date').value = today();
   $('connect-form').hidden = false; $('disconnect').hidden = true; $('existing-posts').hidden = true;
   $('connection-state').textContent = '연결 해제됨. 초안은 이 브라우저에 남아 있습니다.'; $('publish').disabled = true; status('연결을 해제했습니다.');
 };
@@ -173,6 +181,7 @@ $('confirm-publish').onclick = async () => {
   } catch (error) { status(error.message, 'error'); await saveDraft(); } finally { setBusy(false); }
 };
 window.addEventListener('beforeunload', event => { if (busy) { event.preventDefault(); event.returnValue = ''; } });
+async function restoreOwnerDraft() {
 $('date').value = today();
 const restoreGeneration = generation;
 // Disable editing while restoring so an older draft cannot overwrite new input.
@@ -188,3 +197,6 @@ try {
     $('save-state').textContent = '이 브라우저에 저장한 초안을 복원했습니다.';
   }
 } catch (error) { $('save-state').textContent = error.message; } finally { setBusy(false); }
+
+}
+$('date').value = today();
