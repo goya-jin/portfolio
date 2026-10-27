@@ -1,0 +1,20 @@
+/* Plain personal-web typography inspired by bjh21.me.uk. */
+html { color-scheme: light; }
+body { margin: 8px; background: white; color: black; font-family: "Times New Roman", "Noto Serif KR", serif; font-size: 16px; line-height: 1.5; overflow-wrap: anywhere; }
+header, main, footer { max-width: 74ch; }
+header { margin-bottom: 2em; }
+header > p { font-size: 1.25em; font-weight: bold; }
+a { color: #0000ee; text-decoration: underline; }
+a:visited { color: #551a8b; }
+a:focus-visible { outline: 2px solid; outline-offset: 3px; }
+h1 { font-size: 2em; line-height: 1.2; }
+h2 { font-size: 1.5em; }
+li { margin-block: .3em; }
+time { font-variant-numeric: tabular-nums; }
+footer { margin-top: 3em; }
+img, video { max-width: 100%; height: auto; }
+pre { overflow-x: auto; padding: .75em; background: #f4f4f4; }
+blockquote { margin-left: 1em; padding-left: 1em; border-left: 2px solid #999; }
+table { border-collapse: collapse; display: block; overflow-x: auto; }
+th, td { border: 1px solid #aaa; padding: .4em; }
+@media (max-width: 480px) { nav { line-height: 2; } ul { padding-left: 1.5em; } }
