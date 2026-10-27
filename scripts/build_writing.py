@@ -3,6 +3,7 @@ from pathlib import Path
 from datetime import date
 from html import escape as e
 import hashlib
+import os
 import json
 import re
 import shutil
@@ -73,7 +74,7 @@ def build():
     # Version every local HTML navigation URL, not only the stylesheet.
     # Otherwise a new page can navigate back into a browser-cached old menu.
     inputs = [Path(__file__), DEST/'writing.css', *sorted(SOURCE.glob('*.md'))]
-    version = hashlib.sha256(b''.join(p.read_bytes() for p in inputs)).hexdigest()[:12]
+    version = hashlib.sha256(b''.join(p.read_bytes() for p in inputs) + os.environ.get('GITHUB_SHA', '').encode()).hexdigest()[:12]
     for path in [*DEST.rglob('*.html'), *(ROOT/'admin').glob('*.html')]:
         text = path.read_text(encoding='utf-8')
         text = re.sub(r'href="([^":?]+\.html)(?:\?v=[a-z0-9]+)?"', lambda m: f'href="{m[1]}?v={version}"', text)
