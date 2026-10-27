@@ -11,7 +11,7 @@ export async function GET(request){const a=await requireOwner(request);if(a.erro
 export async function POST(request){const a=await requireOwner(request,true);if(a.error)return a.error;try{
  if(Number(request.headers.get('content-length')||0)>4*1024*1024)throw Error('전체 이미지 크기는 3MB 이하여야 합니다.');
  const form=await request.formData(),data=JSON.parse(form.get('project')),files=form.getAll('files');
- if(files.length>8||files.reduce((s,f)=>s+f.size,0)>3*1024*1024||files.some(f=>!f.size||!/^image\/(jpeg|png|gif|webp|avif)$/.test(f.type)))throw Error('JPG·PNG·GIF·WebP·AVIF 이미지를 전체 3MB, 최대 8개까지 올릴 수 있습니다.');
+ if(files.length>40||files.reduce((s,f)=>s+f.size,0)>3*1024*1024||files.some(f=>!f.size||!/^image\/(jpeg|png|gif|webp|avif)$/.test(f.type)))throw Error('JPG·PNG·GIF·WebP·AVIF 이미지를 전체 3MB, 최대 40개까지 올릴 수 있습니다.');
  const head=(await github(a.token,'/git/ref/heads/main')).object.sha,base=await github(a.token,`/git/commits/${head}`),index=await github(a.token,`/contents/index.html?ref=${head}`),indexHTML=decodeFile(index),list=projectList(indexHTML);
  let html,old;if(data.create){if(list.some(p=>p.path===data.path))throw Error('이미 사용 중인 프로젝트 주소입니다.');const root=await github(a.token,`/git/trees/${base.tree.sha}`);if(root.tree.some(f=>f.path===data.path))throw Error('이미 사용 중인 파일 주소입니다.');html=newProject(indexHTML,data);data.project=readProject(html)}
  else{if(!list.some(p=>p.path===data.path))throw Error('프로젝트를 선택해 주세요.');old=await github(a.token,`/contents/${data.path}?ref=${head}`);if(old.sha!==data.sha)return Response.json({error:'다른 곳에서 수정된 페이지입니다. 최신 내용을 다시 불러와 주세요.'},{status:409});html=decodeFile(old)}
