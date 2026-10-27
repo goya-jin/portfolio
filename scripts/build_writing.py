@@ -70,6 +70,19 @@ def build():
         folder = DEST/post['slug']
         folder.mkdir()
         (folder/'index.html').write_text(page(post['title'], body, depth=1), encoding='utf-8')
+    # Version every local HTML navigation URL, not only the stylesheet.
+    # Otherwise a new page can navigate back into a browser-cached old menu.
+    inputs = [Path(__file__), DEST/'writing.css', *sorted(SOURCE.glob('*.md'))]
+    version = hashlib.sha256(b''.join(p.read_bytes() for p in inputs)).hexdigest()[:12]
+    for path in DEST.rglob('*.html'):
+        text = path.read_text(encoding='utf-8')
+        text = re.sub(r'href="([^":?]+\.html)"', lambda m: f'href="{m[1]}?v={version}"', text)
+        text = text.replace('0;url=index.html"', f'0;url=index.html?v={version}"')
+        path.write_text(text, encoding='utf-8')
+    for path in ROOT.glob('*.html'):
+        text = path.read_text(encoding='utf-8')
+        text = re.sub(r'href="writing/index\.html(?:\?v=[a-z0-9]+)?"', f'href="writing/index.html?v={version}"', text)
+        path.write_text(text, encoding='utf-8')
     print(f'Built {len(posts)} posts grouped by year.')
 
 if __name__ == '__main__':
