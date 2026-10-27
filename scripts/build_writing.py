@@ -32,7 +32,7 @@ def load_posts():
 def page(title, body, depth=0, current=''):
     prefix = '../' * depth
     css_version = hashlib.sha256((DEST / "writing.css").read_bytes()).hexdigest()[:12]
-    nav = ' · '.join(f'<a href="{href}"' + (' aria-current="page"' if label == current else '') + f'>{label}</a>' for label, href in [('Portfolio', prefix+'../index.html'), ('Posts', prefix+'index.html'), ('Archive', prefix+'archive.html'), ('About', prefix+'../info.html')])
+    nav = ' · '.join(f'<a href="{href}"' + (' aria-current="page"' if label == current else '') + f'>{label}</a>' for label, href in [('Portfolio', prefix+'../index.html'), ('Posts', prefix+'index.html'), ('About', prefix+'../info.html')])
     return f'''<!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{e(title)} — Goya Jin</title><meta name="description" content="Goya Jin의 글과 기록.">
@@ -49,16 +49,16 @@ def build():
     for old in DEST.iterdir():
         if old.is_dir():
             shutil.rmtree(old)
-    listing = '<ul>\n' + '\n'.join(row(p) for p in posts) + '\n</ul>' if posts else '<p>아직 공개된 글이 없습니다.</p>'
-    (DEST/'index.html').write_text(page('Writing', '<h1>Writing</h1><p>글과 기록.</p>'+listing, current='Posts'), encoding='utf-8')
     years = sorted({p['date'][:4] for p in posts}, reverse=True)
-    archive = '<h1>Archive</h1><p>연도별 글 모음.</p>'
-    archive += '<p>' + ' · '.join(f'<a href="#{y}">{y}</a>' for y in years) + '</p>'
+    listing = '<h1>Writing</h1><p>글과 기록.</p>'
     for year in years:
-        archive += f'<section aria-labelledby="{year}"><h2 id="{year}">{year}</h2><ul>' + ''.join(row(p) for p in posts if p['date'].startswith(year)) + '</ul></section>'
+        listing += f'<section aria-labelledby="year-{year}"><h2 id="year-{year}">{year}</h2><ul>' + ''.join(row(p) for p in posts if p['date'].startswith(year)) + '</ul></section>'
     if not posts:
-        archive += '<p>아직 공개된 글이 없습니다.</p>'
-    (DEST/'archive.html').write_text(page('Archive', archive, current='Archive'), encoding='utf-8')
+        listing += '<p>아직 공개된 글이 없습니다.</p>'
+    (DEST/'index.html').write_text(page('Writing', listing, current='Posts'), encoding='utf-8')
+    # Preserve old bookmarks while keeping a single post listing.
+    redirect = '<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=index.html"><title>글 목록으로 이동 — Goya Jin</title></head><body><p><a href="index.html">글 목록으로 이동</a></p></body></html>'
+    (DEST/'archive.html').write_text(redirect, encoding='utf-8')
     for i, post in enumerate(posts):
         html = markdown.markdown(post['body'], extensions=['extra', 'sane_lists'])
         body = f'<article><h1>{e(post["title"])}</h1><p><time datetime="{post["date"]}">{post["date"]}</time></p>{html}</article><hr><nav aria-label="글 이동"><p><a href="../index.html">← 글 목록</a></p>'
@@ -70,7 +70,7 @@ def build():
         folder = DEST/post['slug']
         folder.mkdir()
         (folder/'index.html').write_text(page(post['title'], body, depth=1), encoding='utf-8')
-    print(f'Built {len(posts)} posts and archive.')
+    print(f'Built {len(posts)} posts grouped by year.')
 
 if __name__ == '__main__':
     build()
