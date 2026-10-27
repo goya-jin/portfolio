@@ -1,4 +1,5 @@
 import {load} from 'cheerio';
+import {languagePreview} from './project-languages.mjs';
 import {readGroupContent,writeGroupContent,readParagraphs,writeParagraphs} from './project-content.mjs';
 export const PUBLIC_BASE='https://goya-jin.github.io/portfolio/';
 export const validProjectPath=p=>typeof p==='string'&&/^[a-z0-9][a-z0-9_-]*\.html$/.test(p)&&!['info.html','admin.html','404.html'].includes(p);
@@ -68,7 +69,7 @@ export function applyProject(html,p){
  }
  return $.html();
 }
-export function previewProject(html){const $=load(html);$('script,base').remove();$('head').prepend(`<base href="${PUBLIC_BASE}">`);return $.html()}
+export function previewProject(html,language='en'){const $=load(html);$('script,base').remove();languagePreview($,language);$('head').prepend(`<base href="${PUBLIC_BASE}">`);return $.html()}
 export function newProject(template,p){
  if(!p||!validProjectPath(p.path)||p.path==='index.html'||typeof p.title!=='string'||!p.title.trim()||p.title.length>200||!['role','year','description','credits','group'].every(k=>typeof p[k]==='string'&&p[k].length<=30000))throw Error('새 프로젝트의 제목·주소·내용을 확인해 주세요.');
  const $=load(template),main=$('main').empty();const text=(tag,s)=>$(tag).text(s);
