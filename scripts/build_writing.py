@@ -38,7 +38,7 @@ def page(title, body, depth=0, current=''):
 <title>{e(title)} — Goya Jin</title><meta name="description" content="Goya Jin의 글과 기록.">
 <link rel="stylesheet" href="{prefix}writing.css?v={css_version}"></head>
 <body><header><p><a href="{prefix}index.html">~goya jin</a></p><nav aria-label="주요 메뉴">{nav}</nav></header>
-<main id="content">{body}</main><footer><hr><p>Goya Jin · <a href="mailto:09190kk@gmail.com">Email</a></p></footer></body></html>'''
+<main id="content">{body}</main><footer><hr><p>Goya Jin · <a href="mailto:09190kk@gmail.com">Email</a> · <a href="{prefix}../admin/index.html">글쓰기</a></p></footer></body></html>'''
 
 def row(p):
     return f'<li><time datetime="{p["date"]}">{p["date"]}</time> — <a href="{p["slug"]}/index.html">{e(p["title"])}</a></li>'
@@ -74,9 +74,9 @@ def build():
     # Otherwise a new page can navigate back into a browser-cached old menu.
     inputs = [Path(__file__), DEST/'writing.css', *sorted(SOURCE.glob('*.md'))]
     version = hashlib.sha256(b''.join(p.read_bytes() for p in inputs)).hexdigest()[:12]
-    for path in DEST.rglob('*.html'):
+    for path in [*DEST.rglob('*.html'), *(ROOT/'admin').glob('*.html')]:
         text = path.read_text(encoding='utf-8')
-        text = re.sub(r'href="([^":?]+\.html)"', lambda m: f'href="{m[1]}?v={version}"', text)
+        text = re.sub(r'href="([^":?]+\.html)(?:\?v=[a-z0-9]+)?"', lambda m: f'href="{m[1]}?v={version}"', text)
         text = text.replace('0;url=index.html"', f'0;url=index.html?v={version}"')
         path.write_text(text, encoding='utf-8')
     for path in ROOT.glob('*.html'):
