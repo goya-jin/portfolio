@@ -1,4 +1,5 @@
 import {load} from 'cheerio';
+import {readGroupContent,writeGroupContent,readParagraphs,writeParagraphs} from './project-content.mjs';
 export const PUBLIC_BASE='https://goya-jin.github.io/portfolio/';
 export const validProjectPath=p=>typeof p==='string'&&/^[a-z0-9][a-z0-9_-]*\.html$/.test(p)&&!['info.html','admin.html','404.html'].includes(p);
 export function projectList(html){const $=load(html);return [{path:'index.html',title:'홈 페이지',group:'홈'},...$('nav[aria-label="Projects"] a').toArray().map(a=>({path:$(a).attr('href')?.split('?')[0],title:$(a).text().trim(),group:$(a).closest('section').find('h2').first().text().trim()})).filter(p=>validProjectPath(p.path))].filter((p,i,ps)=>ps.findIndex(q=>q.path===p.path)===i)}
@@ -9,7 +10,7 @@ export function safeMediaURL(value,kind){
 }
 function inspect(html){
  const $=load(html);if(!$('main').length)throw Error('페이지의 본문 영역을 확인하지 못했습니다.');
- const texts=[];function walk(node){for(const n of node.children||[]){if(n.type==='text'&&n.data.trim())texts.push(n);else if(n.type!=='text'&&!['script','style','iframe','video','audio','button','noscript'].includes(n.name)&&!$(n).is('a[href="index.html"],a[href="#"],[data-project-group-caption]'))walk(n)}}$('main').each((_,el)=>walk(el));
+ const texts=[];function walk(node){for(const n of node.children||[]){if(n.type==='text'&&n.data.trim())texts.push(n);else if(n.type!=='text'&&!['script','style','iframe','video','audio','button','noscript'].includes(n.name)&&!$(n).is('a[href="index.html"],a[href="#"],[data-project-group-caption],[data-project-group-content]'))walk(n)}}$('main').each((_,el)=>walk(el));
  const groups=[],items=[];$('main img, main video, main iframe, main audio').each((_,el)=>{
   const node=$(el),figure=node.closest('figure'),wrapper=figure.length?figure[0]:el,parent=wrapper.parent;if(!parent)return;
   let group=groups.indexOf(parent);if(group<0){group=groups.length;groups.push(parent)}
@@ -17,14 +18,14 @@ function inspect(html){
   const src=node.attr('src')||node.attr('data-project-src')||node.find('source').first().attr('src')||node.find('source').first().attr('data-project-src')||'';
   if(items.some(m=>m.wrapper===wrapper))return;
   items.push({el,wrapper,group,kind,src,hidden:$(wrapper).attr('data-project-hidden')==='true',alt:node.attr('alt')||node.attr('title')||'',poster:node.attr('poster')||''});
- });return {$,texts,groups,items};
+ });$('main [data-project-media-group]').each((_,el)=>{if(!groups.includes(el))groups.push(el)});return {$,texts,groups,items};
 }
-export function readProject(html){const {$,texts,items,groups}=inspect(html);return {title:$('title').text().replace(/ — HYUNJIN KIM$/,''),groupCount:groups.length,groups:groups.map((el,id)=>({id,caption:$(el).children('[data-project-group-caption]').first().text(),columns:Number(/--cols:\s*(\d+)/.exec($(el).attr('style')||'')?.[1]||1),editableColumns:$(el).hasClass('gallery')})),texts:texts.map((n,id)=>({id,value:n.data})),media:items.map(({group,kind,src,alt,poster,hidden},id)=>({id,group,kind,src,alt,poster,hidden}))}}
+export function readProject(html){const {$,texts,items,groups}=inspect(html);return {title:$('title').text().replace(/ — HYUNJIN KIM$/,''),paragraphs:readParagraphs($),groupCount:groups.length,groups:groups.map((el,id)=>({id,...readGroupContent($,el),caption:$(el).children('[data-project-group-caption]').first().text(),columns:Number(/--cols:\s*(\d+)/.exec($(el).attr('style')||'')?.[1]||1),editableColumns:$(el).hasClass('gallery')})),texts:texts.map((n,id)=>({id,value:n.data})),media:items.map(({group,kind,src,alt,poster,hidden},id)=>({id,group,kind,src,alt,poster,hidden}))}}
 function validateData(p){if(!p||typeof p.title!=='string'||!p.title.trim()||p.title.length>200||!Array.isArray(p.texts)||p.texts.length>2000||!Array.isArray(p.media)||p.media.length>500)throw Error('프로젝트 입력 내용을 확인해 주세요.')}
 export function applyProject(html,p){
  validateData(p);const {$,texts,groups,items}=inspect(html);
  if(p.texts.length!==texts.length||p.texts.some((t,i)=>t.id!==i||typeof t.value!=='string'||t.value.length>30000))throw Error('본문 구조가 변경됐습니다. 다시 불러와 주세요.');
- p.texts.forEach((t,i)=>{if(texts[i].data!==t.value)texts[i].data=t.value});$('title').text(p.title.trim()+' — HYUNJIN KIM');
+ writeParagraphs($,p.paragraphs);p.texts.forEach((t,i)=>{if(texts[i].data!==t.value)$(texts[i]).replaceWith($('<span></span>').text(t.value).html().replace(/\n/g,'<br>'))});$('title').text(p.title.trim()+' — HYUNJIN KIM');
  p={...p,media:p.media.map(m=>({...m,hidden:m.hidden??items[m.id]?.hidden??false}))};
  for(const [id,item] of items.entries())if(!p.media.some(m=>m.id===id)){const entry={id,group:item.group,kind:item.kind,src:item.src,alt:item.alt,hidden:true};const index=p.media.findIndex(m=>Number.isInteger(m.id)&&m.id>id);if(index<0)p.media.push(entry);else p.media.splice(index,0,entry)}
  const settings=p.groups||[...readProject(html).groups,{id:groups.length,columns:1}];
@@ -38,7 +39,7 @@ export function applyProject(html,p){
  for(const g of [...groups.map((_,i)=>i),...settings.filter(s=>s.id>=groups.length).map(s=>s.id)]){
   const ms=p.media.filter(m=>m.group===g),old=items.filter(m=>m.group===g);let parent=groups[g],anchors=[];
   if(old.length){for(const m of old){const a=$('<span></span>');$(m.wrapper).before(a);anchors.push(a);$(m.wrapper).remove()}}
-  else if(ms.length){parent=$('<div class="gallery" style="--cols:1;--gallery-gap:1rem"></div>')[0];$('main').last().append(parent)}
+  else if(ms.length||settings.find(s=>s.id===g)?.blocks?.length||settings.find(s=>s.id===g)?.caption?.trim()){parent=$('<div data-project-media-group="true" class="gallery" style="--cols:1;--gallery-gap:1rem"></div>')[0];$('main').last().append(parent)}
   const columns=settings.find(s=>s.id===g)?.columns;if(parent&&$(parent).hasClass('gallery')&&columns&&Number(/--cols:\s*(\d+)/.exec($(parent).attr('style')||'')?.[1]||1)!==columns){let style=$(parent).attr('style')||'';style=/--cols:\s*\d+/.test(style)?style.replace(/--cols:\s*\d+/,`--cols:${columns}`):style+`;--cols:${columns}`;$(parent).attr('style',style)}
   for(const [position,m] of ms.entries()){let wrapper;if(Number.isInteger(m.id)){
     const old=items[m.id],node=$(old.el);wrapper=old.wrapper;
@@ -62,6 +63,7 @@ export function applyProject(html,p){
     const allHidden=ms.length>0&&ms.every(m=>m.hidden);if(allHidden)caption.attr('hidden','').css('display','none');else caption.removeAttr('hidden').css('display','');
    }else caption.remove();
   }
+  if(parent&&config)writeGroupContent($,parent,config,ms.length>0&&ms.every(m=>m.hidden));
 
  }
  return $.html();
