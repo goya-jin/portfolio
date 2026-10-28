@@ -40,3 +40,9 @@ hr{height:0;min-height:0;border:0;border-top:1px solid #555;background:none;box-
 /* Separate mobile home navigation from the menu disclosure. */
 .mobile-header{display:none}
 @media(max-width:760px){.mobile-header{display:flex;justify-content:space-between;align-items:center;padding:.5rem 1.5rem;gap:1rem}.mobile-brand{display:flex;align-items:center;min-height:44px}.mobile-header .menu-toggle{display:flex;width:auto;min-height:44px;padding:0 0 0 1rem;cursor:pointer}}
+
+/* Readable prose without changing image galleries. */
+main{min-width:0}main column-unit,main p,main h1,main h2,main h3,main figcaption{overflow-wrap:anywhere;word-break:keep-all}
+main .reading-row{display:block}main .reading-row>column-unit.readable-copy{display:block;flex:none;width:100%;max-width:80ch}main .reading-row>column-unit:not(.readable-copy){display:none}
+main .project-prose{line-height:1.5;max-width:80ch}main column-unit{max-width:100%}main hr{max-width:100%}
+@media(max-width:1100px){main .copy-columns{flex-wrap:wrap;gap:1rem}main .copy-columns>column-unit,main .copy-columns>column-unit[span]{flex:1 1 100%;width:100%;max-width:100%}main .copy-columns>.empty-copy-column{display:none}}
