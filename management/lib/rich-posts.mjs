@@ -8,7 +8,7 @@ export function sanitizeRichHTML(html){
  $('[data-upload-id]').each((_,el)=>($(el).closest('figure').length?$(el).closest('figure'):$(el)).remove());
  const clean=sanitizeHtml($.html(),{
   allowedTags:['p','br','h1','h2','h3','h4','strong','b','em','i','u','s','del','blockquote','ul','ol','li','pre','code','hr','img','figure','figcaption','a','div','span','table','thead','tbody','tr','th','td','iframe','video','audio','source'],
-  allowedAttributes:{video:['src','poster','controls','playsinline','preload','style'],audio:['src','controls','preload'],source:['src','type'],a:['href','title','target','rel'],img:['src','alt','title','width','height'],figure:['data-writing-image','style'],blockquote:['class'],ol:['start'],iframe:['src','title','width','height','allowfullscreen','loading','referrerpolicy','allow'],p:['style'],h1:['style'],h2:['style'],h3:['style'],h4:['style'],th:['colspan','rowspan'],td:['colspan','rowspan']},
+  allowedAttributes:{span:['data-photo-source'],video:['src','poster','controls','playsinline','preload','style'],audio:['src','controls','preload'],source:['src','type'],a:['href','title','target','rel'],img:['src','alt','title','width','height'],figure:['data-writing-image','style'],blockquote:['class'],ol:['start'],iframe:['src','title','width','height','allowfullscreen','loading','referrerpolicy','allow'],p:['style'],h1:['style'],h2:['style'],h3:['style'],h4:['style'],th:['colspan','rowspan'],td:['colspan','rowspan']},
   allowedClasses:{blockquote:['twitter-tweet']},allowedStyles:{'*':{'text-align':[/^(left|center|right)$/],width:[/^(50|75|100)%$/],'max-height':[/^\d{1,3}vh$/]}},
   allowedSchemes:['https','http','mailto'],allowedSchemesByTag:{img:['https'],video:['https'],audio:['https'],source:['https']},allowProtocolRelative:false,
   allowedIframeHostnames:['www.youtube.com','www.youtube-nocookie.com','player.vimeo.com','superspl.at'],
@@ -29,3 +29,4 @@ export function editorHTML(body,format='markdown'){
  return $.html();
 }
 export function portfolioHTML(html){const $=load(sanitizeRichHTML(html),null,false);$('img,a,video,audio,source').each((_,el)=>{const attr=el.tagName==='a'?'href':'src',src=$(el).attr(attr)||'';if(src.startsWith('../../assets/'))$(el).attr(attr,src.slice(6))});return $.html()}
+

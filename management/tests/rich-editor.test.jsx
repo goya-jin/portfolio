@@ -47,3 +47,18 @@ test('external content never replaces an active IME composition; echoed changes 
  let resets=0;editor.on('transaction',({transaction})=>{if(transaction.getMeta('preventUpdate'))resets++});
  await act(async()=>editor.commands.insertContent('한글'));assert.equal(resets,0);assert.ok(editor.getText().includes('한글'));cleanup();
 });
+test('photo source links survive publishing and repeated editing without duplicating caption or source',()=>{
+ const e=new Editor({extensions:editorExtensions(),content:'<p>본문</p>'});
+ e.commands.insertContent({type:'writingImage',attrs:{src:'https://example.com/photo.jpg',caption:'Figure 1. Male Fly Connectome.',sourceName:'Google Research',sourceUrl:'https://research.google/blog/?a=1&b=2',width:50}});
+ for(let i=0;i<3;i++){const saved=sanitizeRichHTML(e.getHTML()),doc=new DOMParser().parseFromString(saved,'text/html'),link=doc.querySelector('figcaption a');assert.equal(link.textContent,'Google Research');assert.equal(link.getAttribute('href'),'https://research.google/blog/?a=1&b=2');assert.equal(link.getAttribute('target'),'_blank');assert.equal(doc.querySelectorAll('[data-photo-source]').length,1);e.commands.setContent(editorHTML(saved,'html'));const photo=e.state.doc.content.content.find(n=>n.type.name==='writingImage');assert.equal(photo.attrs.caption,'Figure 1. Male Fly Connectome.');assert.equal(photo.attrs.sourceName,'Google Research');assert.equal(photo.attrs.sourceUrl,'https://research.google/blog/?a=1&b=2')}
+ e.destroy();
+});
+test('photo source fields update the saved link and reject executable URLs',async()=>{
+ const {photoSourceHref}=await import('../app/components/rich-editor.jsx');assert.equal(photoSourceHref('javascript:alert(1)'),'');assert.equal(photoSourceHref('data:text/html,test'),'');assert.equal(photoSourceHref('https://user:password@example.com'),'');
+ let html='<figure data-writing-image="true"><img src="https://example.com/photo.jpg"><figcaption>기존 설명</figcaption></figure>';
+ function Harness(){const [value,setValue]=React.useState(html);return <RichEditor value={value} onChange={v=>{html=v;setValue(v)}}/>}
+ const screen=render(<Harness/>);await waitFor(()=>assert.ok(screen.container.querySelector('.tiptap')));
+ fireEvent.change(screen.getByRole('textbox',{name:'출처 이름'}),{target:{value:'Google Research'}});fireEvent.change(screen.getByRole('textbox',{name:'출처 URL'}),{target:{value:'https://research.google/'}});
+ await waitFor(()=>assert.ok(html.includes('href="https://research.google/"')));assert.ok(html.includes('기존 설명'));assert.equal(screen.getByRole('textbox',{name:'출처 이름'}).value,'Google Research');
+ fireEvent.change(screen.getByRole('textbox',{name:'출처 URL'}),{target:{value:'javascript:alert(1)'}});await waitFor(()=>assert.ok(!html.includes('javascript:')));assert.ok(!html.includes('<a '));cleanup();
+});
