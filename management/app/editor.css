@@ -6,3 +6,5 @@
 .image-source{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:0;border-top:1px solid #eee}.image-source a,.image-source small{grid-column:1/-1;padding:4px 8px 8px;font-size:12px;overflow-wrap:anywhere}.image-source a{text-decoration:underline}.image-source small{color:#a22}.image-source .image-caption{border-top:0}@media(max-width:600px){.image-source{grid-template-columns:1fr}}
 
 .rich-editor .tiptap [data-writing-bubble]{background-color:#e8f3ff;color:#17365b;border-radius:18px;padding:1em 1.25em;margin:1em 0;max-width:100%;box-sizing:border-box}.rich-editor .tiptap [data-writing-bubble]>:last-child{margin-bottom:0}
+
+.editor-field{display:block;margin:16px 0}.editor-field-label{margin-bottom:6px;font-weight:600}.credit .editor-field{margin:8px 0}
