@@ -62,3 +62,26 @@ test('photo source fields update the saved link and reject executable URLs',asyn
  await waitFor(()=>assert.ok(html.includes('href="https://research.google/"')));assert.ok(html.includes('기존 설명'));assert.equal(screen.getByRole('textbox',{name:'출처 이름'}).value,'Google Research');
  fireEvent.change(screen.getByRole('textbox',{name:'출처 URL'}),{target:{value:'javascript:alert(1)'}});await waitFor(()=>assert.ok(!html.includes('javascript:')));assert.ok(!html.includes('<a '));cleanup();
 });
+test('photo picker remembers the insertion point even if focus moves and the document changes before selection',async()=>{
+ let html='<p>앞문장뒤문장</p><p>끝 문장</p>';
+ globalThis.fetch=async()=>({ok:true,json:async()=>({items:[{src:'https://goya-jin.github.io/portfolio/assets/writing/uploads/at-cursor.jpg'}]})});
+ function Harness(){const [value,setValue]=React.useState(html);return <RichEditor value={value} onChange={v=>{html=v;setValue(v)}}/>}
+ const screen=render(<Harness/>);await waitFor(()=>assert.ok(screen.container.querySelector('.tiptap')));const editor=screen.container.querySelector('.tiptap').editor;
+ await act(async()=>{editor.commands.setTextSelection(4);fireEvent.click(screen.getByRole('button',{name:'사진 넣기'}));editor.commands.setTextSelection(editor.state.doc.content.size-1);editor.commands.insertContentAt(1,'추가');fireEvent.change(screen.container.querySelector('input[type=file]'),{target:{files:[new File(['photo'],'photo.jpg',{type:'image/jpeg'})]}})});
+ await waitFor(()=>assert.ok(html.includes('at-cursor.jpg')));
+ for(const body of [html,editorHTML(sanitizeRichHTML(html),'html')]){assert.ok(body.indexOf('추가앞문장')<body.indexOf('<figure'));assert.ok(body.indexOf('<figure')<body.indexOf('뒤문장'));assert.ok(body.indexOf('뒤문장')<body.indexOf('끝 문장'))}
+ cleanup();
+});
+test('speech bubbles wrap selected text, survive saving, and can be removed without losing text',()=>{
+ const e=new Editor({extensions:editorExtensions(),content:'<p>앞</p><p>초파리도 <strong>기억</strong>을 가지고 있을까?</p><p>뒤</p>'});
+ e.commands.setTextSelection(e.state.doc.child(0).nodeSize+1);assert.ok(e.commands.toggleWrap('writingBubble'));
+ for(let i=0;i<3;i++){const saved=sanitizeRichHTML(e.getHTML()),doc=new DOMParser().parseFromString(saved,'text/html');assert.equal(doc.querySelectorAll('[data-writing-bubble]').length,1);assert.equal(doc.querySelector('[data-writing-bubble]').textContent,'초파리도 기억을 가지고 있을까?');assert.ok(doc.querySelector('[data-writing-bubble] strong'));assert.match(doc.querySelector('[data-writing-bubble]').getAttribute('style'),/background-color:#e8f3ff/);e.commands.setContent(editorHTML(saved,'html'))}
+ let pos;e.state.doc.descendants((n,p)=>{if(n.type.name==='writingBubble')pos=p+2});e.commands.setTextSelection(pos);assert.ok(e.commands.toggleWrap('writingBubble'));assert.ok(!e.getHTML().includes('data-writing-bubble'));assert.equal(e.state.doc.childCount,3);assert.ok(e.getHTML().includes('<strong>기억</strong>'));e.destroy();
+});
+test('speech bubble toolbar inserts at the cursor and Enter on an empty last paragraph exits it',async()=>{
+ let html='<p>말풍선 문장</p><p>다음 문장</p>';
+ function Harness(){const [value,setValue]=React.useState(html);return <RichEditor value={value} onChange={v=>{html=v;setValue(v)}}/>}
+ const screen=render(<Harness/>);await waitFor(()=>assert.ok(screen.container.querySelector('.tiptap')));const editor=screen.container.querySelector('.tiptap').editor;
+ await act(async()=>{editor.commands.setTextSelection(2);fireEvent.click(screen.getByRole('button',{name:'말풍선'}))});assert.ok(html.includes('data-writing-bubble'));assert.equal(editor.state.doc.child(0).type.name,'writingBubble');
+ await act(async()=>{editor.commands.setTextSelection(editor.state.doc.child(0).nodeSize-2);editor.commands.keyboardShortcut('Enter');editor.commands.keyboardShortcut('Enter')});assert.equal(editor.state.selection.$from.depth,1);assert.equal(editor.state.doc.child(0).type.name,'writingBubble');cleanup();
+});
