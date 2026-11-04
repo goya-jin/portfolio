@@ -1,10 +1,16 @@
+import {iframeSource} from './iframe-source.mjs';
 import {BUBBLE_STYLE} from './bubble.mjs';
 import {marked} from 'marked';
 import sanitizeHtml from 'sanitize-html';
 import {load} from 'cheerio';
 const SITE='https://goya-jin.github.io/portfolio/',RAW='https://raw.githubusercontent.com/goya-jin/portfolio/main/';
-export function sanitizeRichHTML(html){
+export function restoreVideoEmbeds(html){
  const $=load(String(html),null,false);
+ $('p').each((_,el)=>{const src=iframeSource($(el).text());if(src)$(el).replaceWith($('<iframe></iframe>').attr({src,title:'영상'}))});
+ return $.html();
+}
+export function sanitizeRichHTML(html){
+ const $=load(restoreVideoEmbeds(html),null,false);
  $('[data-writing-embed="tweet"],[data-writing-embed="media"]').each((_,el)=>$(el).replaceWith($(el).attr('data-source')||''));
  $('[data-upload-id]').each((_,el)=>($(el).closest('figure').length?$(el).closest('figure'):$(el)).remove());
  const clean=sanitizeHtml($.html(),{

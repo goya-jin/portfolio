@@ -9,6 +9,11 @@ globalThis.requestAnimationFrame=dom.window.requestAnimationFrame.bind(dom.windo
 const rect=()=>({top:0,left:0,right:0,bottom:0,width:0,height:0});dom.window.Range.prototype.getBoundingClientRect=rect;dom.window.Range.prototype.getClientRects=()=>[];dom.window.HTMLElement.prototype.scrollIntoView=()=>{};
 const React=await import('react');const {render,fireEvent,waitFor,act,cleanup}=await import('@testing-library/react');
 test.afterEach(()=>cleanup());
+globalThis.React=React;
+const {default:ProjectEditor}=await import('../app/(owner)/projects/project-editor.jsx');
+const {default:ProfileEditor}=await import('../app/(owner)/profile/profile-editor.jsx');
+const {readProject,applyProject}=await import('../lib/projects.mjs');
+const {readProfile,applyProfile}=await import('../lib/profile.mjs');
 const {Editor}=await import('@tiptap/core');const {default:RichEditor,editorExtensions,moveBlock}=await import('../app/components/rich-editor.jsx');const {editorHTML,sanitizeRichHTML}=await import('../lib/rich-posts.mjs');const {parsePost}=await import('../lib/posts.mjs');
 test('every published post survives the actual Tiptap schema with images and embeds intact',()=>{
  const dir=new URL('../../content/posts/',import.meta.url);
@@ -88,31 +93,38 @@ test('speech bubble toolbar inserts at the cursor and Enter on an empty last par
 });
 test('project text fields keep clicks in the editor and submit edited paragraphs, captions and added text',async()=>{
  globalThis.React=React;
- const {default:ProjectEditor}=await import('../app/(owner)/projects/project-editor.jsx');const {readProject,applyProject}=await import('../lib/projects.mjs');
+ 
  const source='<html><head><title>Test</title></head><body><main><column-set><column-unit>기존 문장</column-unit></column-set><div class="gallery" style="--cols:1"><figure><img src="assets/original.jpg"></figure></div></main></body></html>';
  let saved;
  globalThis.fetch=async(url,options={})=>{if(url==='/api/writing-settings')return {ok:true,json:async()=>({settings:{fontSize:13,lineHeight:1.6,paragraphGap:1.2},sha:null})};if(url.startsWith('/api/projects?'))return {ok:true,json:async()=>({path:'test.html',sha:'original',project:readProject(source)})};if(options.method==='POST'){const request=JSON.parse(options.body.get('project'));saved=applyProject(source,request.project);return {ok:true,json:async()=>({path:'test.html',sha:'saved',project:readProject(saved),url:'https://goya-jin.github.io/portfolio/test.html'})}}return {ok:true,json:async()=>({projects:[{path:'test.html',title:'Test',group:'Portfolio'}]})}};
  const screen=render(<ProjectEditor/>);await waitFor(()=>assert.ok(screen.getByRole('button',{name:'불러오기'}).disabled===false));fireEvent.click(screen.getByRole('button',{name:'불러오기'}));await waitFor(()=>assert.ok(screen.container.querySelector('.paragraph-editor')));
  fireEvent.click(screen.container.querySelector('.paragraph-editor summary'));await waitFor(()=>assert.ok(screen.container.querySelector('.paragraph-editor .tiptap')));
- assert.equal(screen.queryByText('아직 저장하지 않은 수정이 있습니다.'),null,'opening a project must not mark unchanged content as edited');
+ assert.equal(Boolean(screen.queryByText('아직 저장하지 않은 수정이 있습니다.')),false,'opening a project must not mark unchanged content as edited');
  const prose=screen.container.querySelector('.paragraph-editor .tiptap'),select=prose.closest('.rich-editor').querySelector('select');let diverted=0;select.addEventListener('click',()=>diverted++);fireEvent.click(prose.querySelector('p'));assert.equal(diverted,0,'clicking prose must not activate a surrounding label’s toolbar control');
- for(const textbox of screen.container.querySelectorAll('.tiptap'))assert.equal(textbox.closest('label'),null,'a visual editor must not be nested in a native label');
+ for(const textbox of screen.container.querySelectorAll('.tiptap'))assert.equal(Boolean(textbox.closest('label')),false,'a visual editor must not be nested in a native label');
  await act(async()=>prose.editor.commands.insertContent('수정한 문장 '));
  const caption=screen.getByRole('textbox',{name:'사진 아래 설명'});await act(async()=>caption.editor.commands.insertContent('사진 설명 수정'));
  fireEvent.click(screen.getByRole('button',{name:'+ 글 추가'}));await waitFor(()=>assert.ok(screen.queryByRole('textbox',{name:'추가 글'})));const added=screen.getByRole('textbox',{name:'추가 글'});await act(async()=>added.editor.commands.insertContent('새로 쓴 내용'));
  fireEvent.click(screen.getByRole('button',{name:'저장·사이트 반영'}));await waitFor(()=>assert.ok(saved));assert.ok(saved.includes('수정한 문장'));assert.ok(saved.includes('사진 설명 수정'));assert.ok(saved.includes('새로 쓴 내용'));assert.ok(saved.includes('assets/original.jpg'));cleanup();
 });
 test('new project description and credits accept text and reach the save request',async()=>{
- globalThis.React=React;const {default:ProjectEditor}=await import('../app/(owner)/projects/project-editor.jsx');let submitted;
+ globalThis.React=React;let submitted;
  globalThis.fetch=async(url,options={})=>{if(url==='/api/writing-settings')return {ok:true,json:async()=>({settings:{fontSize:13,lineHeight:1.6,paragraphGap:1.2}})};if(options.method==='POST'){submitted=JSON.parse(options.body.get('project'));return {ok:true,json:async()=>({html:'<p>preview</p>'})}}return {ok:true,json:async()=>({projects:[{path:'test.html',title:'Test',group:'Portfolio'}]})}};
  const screen=render(<ProjectEditor/>);await waitFor(()=>assert.equal(screen.getByRole('button',{name:'불러오기'}).disabled,false));fireEvent.click(screen.getByRole('button',{name:'새 프로젝트'}));await waitFor(()=>assert.ok(screen.queryByRole('textbox',{name:'설명'})));
- for(const name of ['설명','크레딧']){const textbox=screen.getByRole('textbox',{name});assert.equal(textbox.closest('label'),null);await act(async()=>textbox.editor.commands.insertContent(name+' 작성'))}
+ for(const name of ['설명','크레딧']){const textbox=screen.getByRole('textbox',{name});assert.equal(Boolean(textbox.closest('label')),false);await act(async()=>textbox.editor.commands.insertContent(name+' 작성'))}
  fireEvent.change(screen.getByLabelText('프로젝트 제목'),{target:{value:'새 프로젝트'}});fireEvent.change(screen.getByLabelText(/주소 이름/),{target:{value:'new-project'}});fireEvent.click(screen.getByRole('button',{name:'미리보기'}));await waitFor(()=>assert.ok(submitted));assert.equal(submitted.create,true);assert.ok(submitted.descriptionHtml.includes('설명 작성'));assert.ok(submitted.creditsHtml.includes('크레딧 작성'));cleanup();
 });
 test('Info prose fields remain editable and preserve changes through save',async()=>{
- globalThis.React=React;const {default:ProfileEditor}=await import('../app/(owner)/profile/profile-editor.jsx');const {readProfile,applyProfile}=await import('../lib/profile.mjs');const source=readFileSync(new URL('./info.fixture.html',import.meta.url),'utf8');let saved;
+ globalThis.React=React;const source=readFileSync(new URL('./info.fixture.html',import.meta.url),'utf8');let saved;
  globalThis.fetch=async(url,options={})=>{if(url==='/api/writing-settings')return {ok:true,json:async()=>({settings:{fontSize:13,lineHeight:1.6,paragraphGap:1.2}})};if(options.method==='PUT'){const request=JSON.parse(options.body);saved=applyProfile(source,request.profile);return {ok:true,json:async()=>({sha:'saved',url:'https://goya-jin.github.io/portfolio/info.html'})}}return {ok:true,json:async()=>({sha:'original',profile:readProfile(source)})}};
  const screen=render(<ProfileEditor/>);await waitFor(()=>assert.ok(screen.queryByRole('textbox',{name:'소개글'})));
- for(const name of ['소개글','학력','회사 경력']){const textbox=screen.getByRole('textbox',{name});assert.equal(textbox.closest('label'),null);await act(async()=>textbox.editor.commands.insertContent(name+' 수정 '))}
+ for(const name of ['소개글','학력','회사 경력']){const textbox=screen.getByRole('textbox',{name});assert.equal(Boolean(textbox.closest('label')),false);await act(async()=>textbox.editor.commands.insertContent(name+' 수정 '))}
  fireEvent.click(screen.getByRole('button',{name:'저장·사이트 반영'}));await waitFor(()=>assert.ok(saved));for(const text of ['소개글 수정','학력 수정','회사 경력 수정'])assert.ok(saved.includes(text));assert.equal(readProfile(saved).credits.length,readProfile(source).credits.length);cleanup();
+});
+test('pasting YouTube iframe code inserts an actual video at the caret and survives publishing',async()=>{
+ let html='<p>앞뒤</p>';
+ function Harness(){const [value,setValue]=React.useState(html);return <RichEditor value={value} onChange={v=>{html=v;setValue(v)}}/>}
+ const screen=render(<Harness/>);await waitFor(()=>assert.ok(screen.container.querySelector('.tiptap')));const box=screen.container.querySelector('.tiptap'),editor=box.editor;
+ await act(async()=>{editor.commands.setTextSelection(2);fireEvent.paste(box,{clipboardData:{files:[],getData:type=>type==='text/plain'?'<iframe width="560" height="315" src="https://www.youtube.com/embed/9jt_q1jM89Y" allowfullscreen></iframe>':''}})});
+ assert.ok(html.includes('<iframe'));assert.ok(!html.includes('&lt;iframe'));assert.ok(html.indexOf('앞')<html.indexOf('<iframe'));assert.ok(html.indexOf('<iframe')<html.indexOf('뒤'));assert.ok(sanitizeRichHTML(html).includes('https://www.youtube.com/embed/9jt_q1jM89Y'));cleanup();
 });

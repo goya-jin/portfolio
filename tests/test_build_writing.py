@@ -14,6 +14,7 @@ class WritingBuildTests(unittest.TestCase):
             root = Path(directory)
             (root/'content/posts').mkdir(parents=True)
             (root/'writing').mkdir()
+            (root/'freshness.js').write_text('/* freshness check */')
             (root/'writing/writing.css').write_text('article{line-height:var(--writing-line-height,1.6)}')
             (root/'index.html').write_text('<html><head></head><body>KEEP PORTFOLIO CONTENT</body></html>')
             settings = {'fontSize':16,'lineHeight':1.8,'paragraphGap':1.2}
@@ -27,6 +28,11 @@ class WritingBuildTests(unittest.TestCase):
                 writing.build()
                 for slug in ['rich','legacy']:
                     self.assertIn('--writing-font-size:16px', (root/f'writing/{slug}/index.html').read_text())
+                version = json.loads((root/'site-version.json').read_text())['version']
+                for path,prefix in [('index.html',''),('writing/index.html','../'),('writing/rich/index.html','../../')]:
+                    html = (root/path).read_text()
+                    self.assertIn(f'src="{prefix}freshness.js?v={version}"', html)
+                    self.assertIn(f'data-site-version="{version}"', html)
                 self.assertIn('KEEP PORTFOLIO CONTENT', (root/'index.html').read_text())
                 self.assertIn('site-typography', (root/'index.html').read_text())
                 self.assertNotIn('<ol start="2026">', (root/'writing/legacy/index.html').read_text())
@@ -36,8 +42,10 @@ class WritingBuildTests(unittest.TestCase):
                 self.assertIn('https://platform.twitter.com/widgets.js', rich)
                 writing.build()
                 self.assertEqual((root/'index.html').read_text().count('id="site-typography"'), 1)
+                self.assertEqual((root/'index.html').read_text().count('id="site-freshness"'), 1)
             finally:
                 writing.ROOT, writing.SOURCE, writing.DEST, writing.TYPOGRAPHY = old
 
 if __name__ == '__main__':
     unittest.main()
+

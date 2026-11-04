@@ -29,3 +29,10 @@ test('profile rich text keeps previous credits and formatted paragraphs',()=>{
 test('site-wide typography accepts numeric bounds and rejects injected settings',()=>{
  assert.deepEqual(validateWritingSettings({fontSize:16,lineHeight:1.8,paragraphGap:1.2}),{fontSize:16,lineHeight:1.8,paragraphGap:1.2});for(const v of [{fontSize:'16px'},{fontSize:90},{lineHeight:0},{paragraphGap:'bad'}])assert.throws(()=>validateWritingSettings({fontSize:13,lineHeight:1.6,paragraphGap:1.2,...v}));
 });
+
+test('pasted iframe source text becomes a provider player without executing arbitrary HTML',()=>{
+ const raw='<p>&lt;iframe width="560" height="315" src="<a href="https://www.youtube.com/embed/9jt_q1jM89Y?si=example">https://www.youtube.com/embed/9jt_q1jM89Y?si=example</a>" title="YouTube video player" allowfullscreen&gt;&lt;/iframe&gt;</p>';
+ const saved=sanitizeRichHTML(raw),$=load(saved);assert.equal($('iframe').length,1);assert.equal($('iframe').attr('src'),'https://www.youtube.com/embed/9jt_q1jM89Y?si=example');assert.ok(!saved.includes('&lt;iframe'));
+ assert.equal(load(sanitizeRichHTML('<p>&lt;iframe src="https://evil.example/"&gt;&lt;/iframe&gt;</p>'))('iframe').length,0);
+ assert.ok(sanitizeRichHTML('<p>설명: &lt;iframe src="https://www.youtube.com/embed/9jt_q1jM89Y"&gt;&lt;/iframe&gt;</p>').includes('설명:'));
+});

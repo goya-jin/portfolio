@@ -74,6 +74,13 @@ def render_body(body, format="markdown"):
     return markdown.markdown(body, extensions=['extra', 'sane_lists', 'nl2br'])
 
 
+def page_freshness(text, version, path):
+    text = re.sub(r'<script\b[^>]*\bid="site-freshness"[^>]*>.*?</script>', '', text, flags=re.DOTALL)
+    source = os.path.relpath(ROOT/'freshness.js', path.parent).replace(os.sep, '/')
+    script = f'<script id="site-freshness" defer src="{source}?v={version}" data-site-version="{version}"></script>'
+    return text.replace('</head>', script + '</head>')
+
+
 def build():
     posts = load_posts()  # Validate all input before replacing generated output.
     DEST.mkdir(exist_ok=True)
@@ -106,18 +113,25 @@ def build():
     inputs = [Path(__file__), DEST/'writing.css', *sorted(SOURCE.glob('*.md'))]
     if TYPOGRAPHY.exists():
         inputs.append(TYPOGRAPHY)
+    if (ROOT/'freshness.js').exists():
+        inputs.append(ROOT/'freshness.js')
     version = hashlib.sha256(b''.join(p.read_bytes() for p in inputs) + os.environ.get('GITHUB_SHA', '').encode()).hexdigest()[:12]
+    (ROOT/'site-version.json').write_text(json.dumps({'version': version}), encoding='utf-8')
     for path in [*DEST.rglob('*.html'), *(ROOT/'admin').glob('*.html')]:
         text = path.read_text(encoding='utf-8')
         text = re.sub(r'href="([^":?]+\.html)(?:\?v=[a-z0-9]+)?"', lambda m: f'href="{m[1]}?v={version}"', text)
         text = text.replace('0;url=index.html"', f'0;url=index.html?v={version}"')
+        if path.is_relative_to(DEST):
+            text = page_freshness(text, version, path)
         path.write_text(text, encoding='utf-8')
     for path in ROOT.glob('*.html'):
         text = path.read_text(encoding='utf-8')
         text = portfolio_typography(text, typography())
+        text = page_freshness(text, version, path)
         text = re.sub(r'href="writing/index\.html(?:\?v=[a-z0-9]+)?"', f'href="writing/index.html?v={version}"', text)
         path.write_text(text, encoding='utf-8')
     print(f'Built {len(posts)} posts grouped by year.')
 
 if __name__ == '__main__':
     build()
+

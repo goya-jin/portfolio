@@ -42,3 +42,5 @@ article iframe[src*="superspl.at"]{width:100%;aspect-ratio:16/10;height:auto;min
 
 
 article [data-writing-bubble]>:last-child{margin-bottom:0}
+
+article iframe[src*="youtube.com/embed/"],article iframe[src*="youtube-nocookie.com/embed/"],article iframe[src*="player.vimeo.com/video/"]{width:100%;aspect-ratio:16/9;height:auto;border:0}
