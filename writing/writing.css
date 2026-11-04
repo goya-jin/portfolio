@@ -37,3 +37,5 @@ article .twitter-tweet{ margin:0 0 1.2em!important; }
 article :is(iframe,img,video){ display:block; margin:0 0 1.2em; }
 
 article figure{max-width:100%;margin:0 0 var(--writing-paragraph-gap,1.2em)}article figure img{width:100%;height:auto}article figcaption{margin-top:.5em;color:#777;font-size:.9em}article p:empty{min-height:1em}
+
+article iframe[src*="superspl.at"]{width:100%;aspect-ratio:16/10;height:auto;min-height:260px;border:0}
