@@ -12,6 +12,24 @@ import markdown
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / 'content/posts'
 DEST = ROOT / 'writing'
+TYPOGRAPHY = ROOT / 'content/writing-settings.json'
+
+def typography():
+    if not TYPOGRAPHY.exists():
+        return None
+    value = json.loads(TYPOGRAPHY.read_text(encoding='utf-8'))
+    size, height, gap = value['fontSize'], value['lineHeight'], value['paragraphGap']
+    if isinstance(size, bool) or not isinstance(size, int) or not 12 <= size <= 24 or not isinstance(height, (int, float)) or not 1.3 <= height <= 2.2 or not isinstance(gap, (int, float)) or not .5 <= gap <= 2.5:
+        raise ValueError('Invalid site typography settings')
+    return f'--writing-font-size:{size}px;--writing-line-height:{height};--writing-paragraph-gap:{gap}em'
+
+def portfolio_typography(text, variables):
+    if not variables:
+        return text
+    text = re.sub(r'<style id="site-typography">.*?</style>', '', text, flags=re.DOTALL)
+    rules = ':root{' + variables + '}html{font-size:var(--writing-font-size)!important}body,.nav-tools>a,.nav-section li>a,.nav-note{line-height:var(--writing-line-height)}main .project-prose,main.info-page{line-height:var(--writing-line-height)}main p{margin-bottom:var(--writing-paragraph-gap)}'
+    return text.replace('</head>', '<style id="site-typography">' + rules + '</style></head>')
+
 
 def load_posts():
     posts = []
@@ -32,19 +50,24 @@ def load_posts():
 
 def page(title, body, depth=0, current=''):
     prefix = '../' * depth
+    variables = typography()
+    html_style = f' style="{variables}"' if variables else ''
+    social_script = '<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>' if 'twitter-tweet' in body and 'platform.twitter.com/widgets.js' not in body else ''
     css_version = hashlib.sha256((DEST / "writing.css").read_bytes()).hexdigest()[:12]
     nav = ' · '.join(f'<a href="{href}"' + (' aria-current="page"' if label == current else '') + f'>{label}</a>' for label, href in [('About', prefix+'../info.html'), ('Posts', prefix+'index.html'), ('Portfolio', prefix+'../index.html')])
     return f'''<!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="ko"{html_style}><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{e(title)} — Goya Jin</title><meta name="description" content="Goya Jin의 글과 기록.">
 <link rel="stylesheet" href="{prefix}writing.css?v={css_version}"></head>
 <body><header><p><a href="{prefix}index.html">~goya jin</a></p><nav aria-label="주요 메뉴">{nav}</nav></header>
-<main id="content">{body}</main><footer><hr><p>Goya Jin · <a href="mailto:09190kk@gmail.com">Email</a></p></footer></body></html>'''
+<main id="content">{body}</main><footer><hr><p>Goya Jin · <a href="mailto:09190kk@gmail.com">Email</a></p></footer>{social_script}</body></html>'''
 
 def row(p):
     return f'<li><time datetime="{p["date"]}">{p["date"]}</time> — <a href="{p["slug"]}/index.html">{e(p["title"])}</a></li>'
 
-def render_body(body):
+def render_body(body, format="markdown"):
+    if format == "html":
+        return body
     # A date such as "2026. 09.03" is prose, not a numbered list.
     body = re.sub(r'^(\d{4})\.(?=[ \t]*\d{1,2}\.[ \t]*\d{1,2}(?:\D|$))',
                   r'\1\\.', body, flags=re.MULTILINE)
@@ -68,7 +91,7 @@ def build():
     redirect = '<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=index.html"><title>글 목록으로 이동 — Goya Jin</title></head><body><p><a href="index.html">글 목록으로 이동</a></p></body></html>'
     (DEST/'archive.html').write_text(redirect, encoding='utf-8')
     for i, post in enumerate(posts):
-        html = render_body(post['body'])
+        html = render_body(post['body'], post.get('format', 'markdown'))
         body = f'<article><h1>{e(post["title"])}</h1><p><time datetime="{post["date"]}">{post["date"]}</time></p>{html}</article><hr><nav aria-label="글 이동"><p><a href="../index.html">← 글 목록</a></p>'
         for label, neighbor in [('이전 글', i+1), ('다음 글', i-1)]:
             if 0 <= neighbor < len(posts):
@@ -81,6 +104,8 @@ def build():
     # Version every local HTML navigation URL, not only the stylesheet.
     # Otherwise a new page can navigate back into a browser-cached old menu.
     inputs = [Path(__file__), DEST/'writing.css', *sorted(SOURCE.glob('*.md'))]
+    if TYPOGRAPHY.exists():
+        inputs.append(TYPOGRAPHY)
     version = hashlib.sha256(b''.join(p.read_bytes() for p in inputs) + os.environ.get('GITHUB_SHA', '').encode()).hexdigest()[:12]
     for path in [*DEST.rglob('*.html'), *(ROOT/'admin').glob('*.html')]:
         text = path.read_text(encoding='utf-8')
@@ -89,6 +114,7 @@ def build():
         path.write_text(text, encoding='utf-8')
     for path in ROOT.glob('*.html'):
         text = path.read_text(encoding='utf-8')
+        text = portfolio_typography(text, typography())
         text = re.sub(r'href="writing/index\.html(?:\?v=[a-z0-9]+)?"', f'href="writing/index.html?v={version}"', text)
         path.write_text(text, encoding='utf-8')
     print(f'Built {len(posts)} posts grouped by year.')

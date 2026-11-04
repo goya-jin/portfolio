@@ -1,6 +1,6 @@
 /* Match portfolio typography while preserving the writing layout. */
-html { color-scheme: light; font-size: 13px; }
-@media (min-width: 761px) { html { font-size: clamp(10px, 1.44vh, 14px); } }
+html { color-scheme: light; font-size: var(--writing-font-size,13px); }
+
 body { margin: 0; padding: 24px clamp(20px, 4vw, 48px); background: white; color: #262626; font-family: Helvetica, Arial, sans-serif; font-size: 1rem; font-weight: 400; line-height: 1.5; overflow-wrap: anywhere; }
 header, main, footer { max-width: 110ch; margin-inline: 0; }
 header { margin-bottom: 2em; }
@@ -24,9 +24,9 @@ main,article{min-width:0}article p,article li,article h1,article h2{word-break:k
 
 /* Consistent left edge and rhythm for writing, including Markdown blocks. */
 body{ text-align:left; }
-article{ line-height:1.6; }
+article{ line-height:var(--writing-line-height,1.6); }
 article :is(p,h1,h2,h3,h4,h5,h6,li,blockquote){ text-align:left; text-indent:0; }
-article p{ margin:0 0 1.2em; }
+article p{ margin:0 0 var(--writing-paragraph-gap,1.2em); }
 article :is(h1,h2,h3,h4,h5,h6){ margin:1.8em 0 .8em; }
 article>h1:first-child{ margin-top:0; }
 article>ul,article>ol{ margin:0 0 1.2em; padding-inline-start:0; list-style-position:outside; }
@@ -35,3 +35,5 @@ article li>p:last-child{ margin-bottom:0; }
 article blockquote{ margin:0 0 1.2em; padding:0; border:0; }
 article .twitter-tweet{ margin:0 0 1.2em!important; }
 article :is(iframe,img,video){ display:block; margin:0 0 1.2em; }
+
+article figure{max-width:100%;margin:0 0 var(--writing-paragraph-gap,1.2em)}article figure img{width:100%;height:auto}article figcaption{margin-top:.5em;color:#777;font-size:.9em}article p:empty{min-height:1em}

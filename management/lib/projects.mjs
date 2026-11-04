@@ -1,3 +1,4 @@
+import {editorHTML,portfolioHTML} from './rich-posts.mjs';
 import {load} from 'cheerio';
 import {normalizeProjectLayout} from './project-layout.mjs';
 import {languagePreview} from './project-languages.mjs';
@@ -14,7 +15,7 @@ function inspect(html){
  const $=load(html);if(!$('main').length)throw Error('페이지의 본문 영역을 확인하지 못했습니다.');
  const texts=[];function walk(node){for(const n of node.children||[]){if(n.type==='text'&&n.data.trim())texts.push(n);else if(n.type!=='text'&&!['script','style','iframe','video','audio','button','noscript'].includes(n.name)&&!$(n).is('a[href="index.html"],a[href="#"],[data-project-group-caption],[data-project-group-content]'))walk(n)}}$('main').each((_,el)=>walk(el));
  const groups=[],items=[];$('main img, main video, main iframe, main audio').each((_,el)=>{
-  const node=$(el),figure=node.closest('figure'),wrapper=figure.length?figure[0]:el,parent=wrapper.parent;if(!parent)return;
+  const node=$(el),figure=node.closest('figure'),wrapper=figure.length?figure[0]:el,parent=wrapper.parent;if(!parent||node.closest('[data-project-rich-paragraph],[data-project-rich]').length)return;
   let group=groups.indexOf(parent);if(group<0){group=groups.length;groups.push(parent)}
   const kind=el.name==='img'?'image':el.name==='iframe'?'embed':el.name;
   const src=node.attr('src')||node.attr('data-project-src')||node.find('source').first().attr('src')||node.find('source').first().attr('data-project-src')||'';
@@ -22,7 +23,7 @@ function inspect(html){
   items.push({el,wrapper,group,kind,src,hidden:$(wrapper).attr('data-project-hidden')==='true',alt:node.attr('alt')||node.attr('title')||'',poster:node.attr('poster')||''});
  });$('main [data-project-media-group]').each((_,el)=>{if(!groups.includes(el))groups.push(el)});return {$,texts,groups,items};
 }
-export function readProject(html){const {$,texts,items,groups}=inspect(html);return {title:$('title').text().replace(/ — HYUNJIN KIM$/,''),paragraphs:readParagraphs($),groupCount:groups.length,groups:groups.map((el,id)=>({id,...readGroupContent($,el),caption:$(el).children('[data-project-group-caption]').first().text(),columns:Number(/--cols:\s*(\d+)/.exec($(el).attr('style')||'')?.[1]||1),editableColumns:$(el).hasClass('gallery')})),texts:texts.map((n,id)=>({id,value:n.data})),media:items.map(({group,kind,src,alt,poster,hidden},id)=>({id,group,kind,src,alt,poster,hidden}))}}
+export function readProject(html){const {$,texts,items,groups}=inspect(html);return {title:$('title').text().replace(/ — HYUNJIN KIM$/,''),paragraphs:readParagraphs($),groupCount:groups.length,groups:groups.map((el,id)=>({id,...readGroupContent($,el),caption:$(el).children('[data-project-group-caption]').first().text(),captionHtml:editorHTML($(el).children('[data-project-group-caption]').first().html()||'','html'),columns:Number(/--cols:\s*(\d+)/.exec($(el).attr('style')||'')?.[1]||1),editableColumns:$(el).hasClass('gallery')})),texts:texts.map((n,id)=>({id,value:n.data})),media:items.map(({group,kind,src,alt,poster,hidden},id)=>({id,group,kind,src,alt,poster,hidden}))}}
 function validateData(p){if(!p||typeof p.title!=='string'||!p.title.trim()||p.title.length>200||!Array.isArray(p.texts)||p.texts.length>2000||!Array.isArray(p.media)||p.media.length>500)throw Error('프로젝트 입력 내용을 확인해 주세요.')}
 export function applyProject(html,p){
  validateData(p);const {$,texts,groups,items}=inspect(html);
@@ -59,23 +60,23 @@ export function applyProject(html,p){
   }for(const anchor of anchors)anchor.remove();
   const config=settings.find(s=>s.id===g);if(parent&&config&&config.caption!==undefined){
    let caption=$(parent).children('[data-project-group-caption]').first();
-   if(config.caption.trim()){
+   if(config.caption.trim()||(typeof config.captionHtml==='string'&&/<(?:img|iframe)\b/.test(config.captionHtml))){
     if(!caption.length)caption=$('<p data-project-group-caption="true" style="white-space:pre-wrap;grid-column:1 / -1;margin:1rem 0"></p>');
-    caption.text(config.caption);const last=ms.at(-1);if(last){const lastNode=Number.isInteger(last.id)?$(items[last.id].wrapper):$(parent).children('figure').last();lastNode.after(caption)}else $(parent).append(caption);
+    if(config.captionHtml!==undefined&&config.captionHtml!==editorHTML(caption.html()||'','html')){if(typeof config.captionHtml!=='string'||config.captionHtml.length>100000)throw Error('사진 설명이 너무 깁니다.');caption.html(portfolioHTML(config.captionHtml)).attr('data-project-rich','true').css('white-space','normal');}else if(config.caption!==caption.text())caption.text(config.caption);const last=ms.at(-1);if(last){const lastNode=Number.isInteger(last.id)?$(items[last.id].wrapper):$(parent).children('figure').last();lastNode.after(caption)}else $(parent).append(caption);
     const allHidden=ms.length>0&&ms.every(m=>m.hidden);if(allHidden)caption.attr('hidden','').css('display','none');else caption.removeAttr('hidden').css('display','');
    }else caption.remove();
   }
   if(parent&&config)writeGroupContent($,parent,config,ms.length>0&&ms.every(m=>m.hidden));
 
  }
- normalizeProjectLayout($);return $.html();
+ if(!$('style#project-rich-style').length)$('head').append('<style id="project-rich-style">[data-project-rich-paragraph] p,[data-project-rich] p{margin:0 0 1em}[data-project-rich-paragraph] img,[data-project-rich] img{max-width:100%;height:auto}[data-project-rich-paragraph] figure,[data-project-rich] figure{max-width:100%;margin:1em 0}</style>');normalizeProjectLayout($);return $.html();
 }
 export function previewProject(html,language='en'){const $=load(html);$('script,base').remove();normalizeProjectLayout($);languagePreview($,language);$('head').prepend(`<base href="${PUBLIC_BASE}">`);return $.html()}
 export function newProject(template,p){
  if(!p||!validProjectPath(p.path)||p.path==='index.html'||typeof p.title!=='string'||!p.title.trim()||p.title.length>200||!['role','year','description','credits','group'].every(k=>typeof p[k]==='string'&&p[k].length<=30000))throw Error('새 프로젝트의 제목·주소·내용을 확인해 주세요.');
  const $=load(template),main=$('main').empty();const text=(tag,s)=>$(tag).text(s);
  const top=$('<column-set gutter="1rem"></column-set>');top.append($('<column-unit slot="0" span="8"></column-unit>').append(text('<b></b>',p.title)),$('<column-unit slot="1" span="4"></column-unit>').append('<a href="index.html">Home ↑</a>'));main.append(top,'<br>');
- const intro=$('<column-set gutter="1rem"></column-set>'),facts=$('<column-unit slot="0" span="4"></column-unit>');facts.append('<b>Role </b>',text('<span></span>',p.role),'<br><b>Year </b>',text('<span></span>',p.year));intro.append(facts,text('<column-unit slot="1" span="8" style="white-space:pre-wrap"></column-unit>',p.description));main.append(intro,'<br>',text('<p style="white-space:pre-wrap"></p>',p.credits));
- $('title').text(p.title+' — HYUNJIN KIM');$('nav[aria-label="Projects"] a').removeAttr('aria-current');normalizeProjectLayout($);return $.html();
+ const intro=$('<column-set gutter="1rem"></column-set>'),facts=$('<column-unit slot="0" span="4"></column-unit>');facts.append('<b>Role </b>',text('<span></span>',p.role),'<br><b>Year </b>',text('<span></span>',p.year));intro.append(facts,p.descriptionHtml!==undefined?$('<column-unit slot="1" span="8" data-project-rich-paragraph="true"></column-unit>').html(portfolioHTML(p.descriptionHtml)):text('<column-unit slot="1" span="8" style="white-space:pre-wrap"></column-unit>',p.description));main.append(intro,'<br>',p.creditsHtml!==undefined?$('<div data-project-rich-paragraph="true"></div>').html(portfolioHTML(p.creditsHtml)):text('<p style="white-space:pre-wrap"></p>',p.credits));
+ $('title').text(p.title+' — HYUNJIN KIM');$('nav[aria-label="Projects"] a').removeAttr('aria-current');if(!$('style#project-rich-style').length)$('head').append('<style id="project-rich-style">[data-project-rich-paragraph] p,[data-project-rich] p{margin:0 0 1em}[data-project-rich-paragraph] img,[data-project-rich] img{max-width:100%;height:auto}[data-project-rich-paragraph] figure,[data-project-rich] figure{max-width:100%;margin:1em 0}</style>');normalizeProjectLayout($);return $.html();
 }
 export function addProjectLink(html,p){const $=load(html);if($(`nav[aria-label="Projects"] a`).toArray().some(a=>$(a).attr('href')===p.path))return html;const sections=$('nav[aria-label="Projects"] section');const section=sections.toArray().find(s=>$(s).find('h2').first().text().trim()===p.group);if(!section)throw Error('추가할 메뉴 카테고리를 확인해 주세요.');$(section).find('ul').first().append($('<li></li>').append($('<a></a>').attr('href',p.path).text(p.title)));return $.html()}

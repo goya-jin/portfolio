@@ -1,8 +1,9 @@
 import {randomUUID} from 'node:crypto';
+import {editorHTML} from '../../../lib/rich-posts.mjs';
 import {requireOwner} from '../../../lib/owner';
 import {github,decodeFile} from '../../../lib/github';
 import {validatePost,parsePost,serializePost,ext} from '../../../lib/posts.mjs';
-export async function GET(request){const access=await requireOwner(request);if(access.error)return access.error;try{const slug=new URL(request.url).searchParams.get('slug');if(slug){if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))throw Error('글 주소를 확인해 주세요.');const f=await github(access.token,`/contents/content/posts/${slug}.md?ref=main`);return Response.json({sha:f.sha,slug,...parsePost(decodeFile(f))},{headers:{'Cache-Control':'no-store'}})}const fs=await github(access.token,'/contents/content/posts?ref=main');return Response.json({posts:fs.filter(f=>f.name.endsWith('.md')).map(f=>({slug:f.name.slice(0,-3)}))},{headers:{'Cache-Control':'no-store'}})}catch(e){return Response.json({error:e.message},{status:400})}}
+export async function GET(request){const access=await requireOwner(request);if(access.error)return access.error;try{const slug=new URL(request.url).searchParams.get('slug');if(slug){if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))throw Error('글 주소를 확인해 주세요.');const f=await github(access.token,`/contents/content/posts/${slug}.md?ref=main`);const post=parsePost(decodeFile(f));return Response.json({sha:f.sha,slug,...post,editorHtml:editorHTML(post.body,post.format)},{headers:{'Cache-Control':'no-store'}})}const fs=await github(access.token,'/contents/content/posts?ref=main');return Response.json({posts:fs.filter(f=>f.name.endsWith('.md')).map(f=>({slug:f.name.slice(0,-3)}))},{headers:{'Cache-Control':'no-store'}})}catch(e){return Response.json({error:e.message},{status:400})}}
 export async function POST(request){const access=await requireOwner(request,true);if(access.error)return access.error;try{
  if(Number(request.headers.get('content-length')||0)>4*1024*1024)return Response.json({error:'전체 첨부파일 크기는 3MB 이하여야 합니다.'},{status:413});
  const form=await request.formData(),p=JSON.parse(form.get('post')),files=form.getAll('files');validatePost(p,files);
@@ -13,5 +14,5 @@ export async function POST(request){const access=await requireOwner(request,true
  const content=serializePost(p,uploads),blob=await github(access.token,'/git/blobs','POST',{content,encoding:'utf-8'});entries.push({path,mode:'100644',type:'blob',sha:blob.sha});
  const updated=await github(access.token,'/git/trees','POST',{base_tree:base.tree.sha,tree:entries}),commit=await github(access.token,'/git/commits','POST',{message:`${editing?'Update':'Publish'} writing: ${p.title.trim()}`,tree:updated.sha,parents:[head]});
  if((await github(access.token,'/git/ref/heads/main')).object.sha!==head)return Response.json({error:'동시에 다른 수정이 있었습니다. 내용을 보관한 뒤 다시 게시해 주세요.'},{status:409});
- await github(access.token,'/git/refs/heads/main','PATCH',{sha:commit.sha,force:false});return Response.json({slug:p.slug,sha:blob.sha,body:parsePost(content).body,url:`https://goya-jin.github.io/portfolio/writing/${p.slug}/index.html?v=${commit.sha.slice(0,12)}`});
+ await github(access.token,'/git/refs/heads/main','PATCH',{sha:commit.sha,force:false});return Response.json({slug:p.slug,sha:blob.sha,body:parsePost(content).body,editorHtml:editorHTML(parsePost(content).body,p.format),url:`https://goya-jin.github.io/portfolio/writing/${p.slug}/index.html?v=${commit.sha.slice(0,12)}`});
  }catch(e){return Response.json({error:e.message},{status:400})}}
