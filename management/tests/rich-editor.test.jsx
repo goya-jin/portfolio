@@ -25,3 +25,25 @@ test('successive photo choices are inserted at their cursor positions and persis
  await waitFor(()=>assert.ok(html.includes('/1.jpg')));await act(async()=>{editor.commands.setTextSelection(editor.state.doc.content.size-1);fireEvent.change(screen.container.querySelector('input[type=file]'),{target:{files:[new File(['photo2'],'second.jpg',{type:'image/jpeg'})]}})});
  await waitFor(()=>assert.ok(html.includes('/2.jpg')));assert.equal(calls,2);assert.equal((html.match(/<figure/g)||[]).length,2);assert.ok(html.indexOf('앞 문장')<html.indexOf('/1.jpg'));assert.ok(html.indexOf('/1.jpg')<html.indexOf('뒤 문장'));assert.ok(!html.includes('blob:'));assert.ok(!html.includes('data-upload-id'));cleanup();
 });
+
+test('Korean photo captions commit after composition and do not commit the final input twice',async()=>{
+ const {PhotoCaption}=await import('../app/components/rich-editor.jsx');const commits=[];
+ function CaptionHarness(){const [value,setValue]=React.useState('사진 ');return <PhotoCaption value={value} onCommit={next=>{commits.push(next);setValue(next)}}/>}
+ const screen=render(<CaptionHarness/>),input=screen.getByRole('textbox',{name:'사진 설명'});
+ fireEvent.compositionStart(input);for(const value of ['사진 ㅎ','사진 하','사진 한'])fireEvent.change(input,{target:{value}});
+ assert.deepEqual(commits,[]);assert.equal(input.value,'사진 한');
+ fireEvent.compositionEnd(input,{data:'한'});fireEvent.change(input,{target:{value:'사진 한'}});
+ assert.deepEqual(commits,['사진 한']);assert.equal(input.value,'사진 한');
+ fireEvent.compositionStart(input);fireEvent.change(input,{target:{value:'사진 한ㄱ'}});fireEvent.change(input,{target:{value:'사진 한글'}});fireEvent.compositionEnd(input,{data:'글'});
+ assert.deepEqual(commits,['사진 한','사진 한글']);assert.equal(input.value,'사진 한글');cleanup();
+});
+test('external content never replaces an active IME composition; echoed changes do not reset the editor',async()=>{
+ let changeValue;const initial='<p>처음</p>';
+ function Harness(){const [value,setValue]=React.useState(initial);changeValue=setValue;return <RichEditor value={value} onChange={setValue}/>}
+ const screen=render(<Harness/>);await waitFor(()=>assert.ok(screen.container.querySelector('.tiptap')));const editor=screen.container.querySelector('.tiptap').editor;
+ let composing=true;Object.defineProperty(editor.view,'composing',{get:()=>composing,configurable:true});
+ await act(async()=>changeValue('<p>외부에서 변경</p>'));assert.equal(editor.getText(),'처음');
+ composing=false;await act(async()=>changeValue('<p>다른 글 불러오기</p>'));assert.equal(editor.getText(),'다른 글 불러오기');
+ let resets=0;editor.on('transaction',({transaction})=>{if(transaction.getMeta('preventUpdate'))resets++});
+ await act(async()=>editor.commands.insertContent('한글'));assert.equal(resets,0);assert.ok(editor.getText().includes('한글'));cleanup();
+});
