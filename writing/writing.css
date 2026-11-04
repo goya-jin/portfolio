@@ -21,3 +21,17 @@ th, td { border: 1px solid #aaa; padding: .4em; }
 @media (max-width: 480px) { nav { line-height: 2; } ul { padding-left: 1.5em; } }
 
 main,article{min-width:0}article p,article li,article h1,article h2{word-break:keep-all;overflow-wrap:anywhere}article iframe,article img,article video{max-width:100%}
+
+/* Consistent left edge and rhythm for writing, including Markdown blocks. */
+body{ text-align:left; }
+article{ line-height:1.6; }
+article :is(p,h1,h2,h3,h4,h5,h6,li,blockquote){ text-align:left; text-indent:0; }
+article p{ margin:0 0 1.2em; }
+article :is(h1,h2,h3,h4,h5,h6){ margin:1.8em 0 .8em; }
+article>h1:first-child{ margin-top:0; }
+article>ul,article>ol{ margin:0 0 1.2em; padding-inline-start:0; list-style-position:outside; }
+article li{ margin:0 0 .5em; }
+article li>p:last-child{ margin-bottom:0; }
+article blockquote{ margin:0 0 1.2em; padding:0; border:0; }
+article .twitter-tweet{ margin:0 0 1.2em!important; }
+article :is(iframe,img,video){ display:block; margin:0 0 1.2em; }

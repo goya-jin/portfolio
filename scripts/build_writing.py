@@ -44,6 +44,13 @@ def page(title, body, depth=0, current=''):
 def row(p):
     return f'<li><time datetime="{p["date"]}">{p["date"]}</time> — <a href="{p["slug"]}/index.html">{e(p["title"])}</a></li>'
 
+def render_body(body):
+    # A date such as "2026. 09.03" is prose, not a numbered list.
+    body = re.sub(r'^(\d{4})\.(?=[ \t]*\d{1,2}\.[ \t]*\d{1,2}(?:\D|$))',
+                  r'\1\\.', body, flags=re.MULTILINE)
+    return markdown.markdown(body, extensions=['extra', 'sane_lists', 'nl2br'])
+
+
 def build():
     posts = load_posts()  # Validate all input before replacing generated output.
     DEST.mkdir(exist_ok=True)
@@ -61,7 +68,7 @@ def build():
     redirect = '<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=index.html"><title>글 목록으로 이동 — Goya Jin</title></head><body><p><a href="index.html">글 목록으로 이동</a></p></body></html>'
     (DEST/'archive.html').write_text(redirect, encoding='utf-8')
     for i, post in enumerate(posts):
-        html = markdown.markdown(post['body'], extensions=['extra', 'sane_lists'])
+        html = render_body(post['body'])
         body = f'<article><h1>{e(post["title"])}</h1><p><time datetime="{post["date"]}">{post["date"]}</time></p>{html}</article><hr><nav aria-label="글 이동"><p><a href="../index.html">← 글 목록</a></p>'
         for label, neighbor in [('이전 글', i+1), ('다음 글', i-1)]:
             if 0 <= neighbor < len(posts):
