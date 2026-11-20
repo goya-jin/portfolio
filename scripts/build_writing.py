@@ -19,7 +19,7 @@ def typography():
         return None
     value = json.loads(TYPOGRAPHY.read_text(encoding='utf-8'))
     size, height, gap = value['fontSize'], value['lineHeight'], value['paragraphGap']
-    if isinstance(size, bool) or not isinstance(size, int) or not 12 <= size <= 24 or not isinstance(height, (int, float)) or not 1.3 <= height <= 2.2 or not isinstance(gap, (int, float)) or not .5 <= gap <= 2.5:
+    if isinstance(size, bool) or not isinstance(size, int) or not 11 <= size <= 24 or not isinstance(height, (int, float)) or not 1.3 <= height <= 2.2 or not isinstance(gap, (int, float)) or not .5 <= gap <= 2.5:
         raise ValueError('Invalid site typography settings')
     return f'--writing-font-size:{size}px;--writing-line-height:{height};--writing-paragraph-gap:{gap}em'
 
