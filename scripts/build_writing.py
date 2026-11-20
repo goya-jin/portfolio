@@ -27,7 +27,7 @@ def portfolio_typography(text, variables):
     if not variables:
         return text
     text = re.sub(r'<style id="site-typography">.*?</style>', '', text, flags=re.DOTALL)
-    rules = ':root{' + variables + '}html{font-size:var(--writing-font-size)!important}body,.nav-tools>a,.nav-section li>a,.nav-note{line-height:var(--writing-line-height)}main .project-prose,main.info-page{line-height:var(--writing-line-height)}main p{margin-bottom:var(--writing-paragraph-gap)}'
+    rules = ':root{' + variables + '}html{font-size:var(--writing-font-size)!important}body,.nav-tools>a,.nav-section li>a,.nav-note{line-height:var(--writing-line-height)}main .project-prose,main.info-page{line-height:var(--writing-line-height)}main p{margin-bottom:var(--writing-paragraph-gap)}@media(max-width:760px){html{font-size:min(var(--writing-font-size),16px)!important}}'
     return text.replace('</head>', '<style id="site-typography">' + rules + '</style></head>')
 
 
@@ -124,9 +124,12 @@ def build():
         if path.is_relative_to(DEST):
             text = page_freshness(text, version, path)
         path.write_text(text, encoding='utf-8')
+    portfolio_css_version = hashlib.sha256((ROOT/'styles.css').read_bytes()).hexdigest()[:12] if (ROOT/'styles.css').exists() else None
     for path in ROOT.glob('*.html'):
         text = path.read_text(encoding='utf-8')
         text = portfolio_typography(text, typography())
+        if portfolio_css_version:
+            text = re.sub(r'href="styles\.css(?:\?v=[^"]*)?"', f'href="styles.css?v={portfolio_css_version}"', text)
         text = page_freshness(text, version, path)
         text = re.sub(r'href="writing/index\.html(?:\?v=[a-z0-9]+)?"', f'href="writing/index.html?v={version}"', text)
         path.write_text(text, encoding='utf-8')
@@ -134,4 +137,5 @@ def build():
 
 if __name__ == '__main__':
     build()
+
 
