@@ -1,0 +1,6 @@
+'use client';
+import {useEffect,useState} from 'react';
+let active=0;
+export function trackUpload(delta){active=Math.max(0,active+delta);window.dispatchEvent(new Event('rich-upload'))}
+export function usePendingUploads(){const [n,setN]=useState(active);useEffect(()=>{const update=()=>setN(active),before=e=>{if(active){e.preventDefault();e.returnValue=''}};window.addEventListener('rich-upload',update);window.addEventListener('beforeunload',before);return()=>{window.removeEventListener('rich-upload',update);window.removeEventListener('beforeunload',before)}},[]);return n}
+export async function compressImage(file){if(!/^image\/(jpeg|png|webp)$/.test(file.type)||file.size<700000)return file;const image=await createImageBitmap(file),scale=Math.min(1,2000/Math.max(image.width,image.height)),canvas=document.createElement('canvas');canvas.width=Math.round(image.width*scale);canvas.height=Math.round(image.height*scale);canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);image.close();const blob=await new Promise(resolve=>canvas.toBlob(resolve,file.type==='image/png'?'image/webp':'image/jpeg',.84));return blob&&blob.size<file.size?new File([blob],file.name.replace(/\.[^.]+$/,blob.type==='image/webp'?'.webp':'.jpg'),{type:blob.type}):file}

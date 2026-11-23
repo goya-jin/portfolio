@@ -1,3 +1,4 @@
+import './canvas.css';
 import './editor.css';
 import './editor.css';
 import './style.css';

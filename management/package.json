@@ -22,7 +22,8 @@
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "sanitize-html": "2.18.1",
-    "server-only": "0.0.1"
+    "server-only": "0.0.1",
+    "grapesjs": "0.23.9"
   },
   "engines": {
     "node": ">=22"
