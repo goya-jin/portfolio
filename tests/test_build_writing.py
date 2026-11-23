@@ -46,6 +46,41 @@ class WritingBuildTests(unittest.TestCase):
             finally:
                 writing.ROOT, writing.SOURCE, writing.DEST, writing.TYPOGRAPHY = old
 
+    def test_hidden_and_deleted_posts_leave_no_page_or_navigation_links(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root/'content/posts').mkdir(parents=True)
+            (root/'writing').mkdir()
+            (root/'writing/writing.css').write_text('article{}')
+            (root/'freshness.js').write_text('/* test */')
+            for slug in ['first', 'middle', 'last']:
+                meta = {'title':slug, 'date':'2026-11-24', 'draft':False, 'format':'html'}
+                (root/f'content/posts/{slug}.md').write_text(json.dumps(meta)+'\n---\n<p>Keep body</p>')
+            old = writing.ROOT, writing.SOURCE, writing.DEST, writing.TYPOGRAPHY
+            writing.ROOT, writing.SOURCE, writing.DEST, writing.TYPOGRAPHY = root, root/'content/posts', root/'writing', root/'content/writing-settings.json'
+            try:
+                writing.build()
+                target = root/'content/posts/middle.md'
+                source = target.read_text()
+                target.write_text(source.replace('"draft": false', '"draft": true'))
+                writing.build()
+                self.assertFalse((root/'writing/middle').exists())
+                for page in (root/'writing').rglob('*.html'):
+                    self.assertNotIn('middle/index.html', page.read_text())
+                target.write_text(source)
+                writing.build()
+                self.assertTrue((root/'writing/middle/index.html').exists())
+                self.assertIn('middle/index.html', (root/'writing/index.html').read_text())
+                target.unlink()
+                writing.build()
+                self.assertFalse((root/'writing/middle').exists())
+                self.assertTrue((root/'writing/first/index.html').exists())
+                for page in (root/'writing').rglob('*.html'):
+                    self.assertNotIn('middle/index.html', page.read_text())
+            finally:
+                writing.ROOT, writing.SOURCE, writing.DEST, writing.TYPOGRAPHY = old
+
 if __name__ == '__main__':
     unittest.main()
+
 
