@@ -47,3 +47,7 @@ article iframe[src*="youtube.com/embed/"],article iframe[src*="youtube-nocookie.
 
 
 @media(max-width:760px){html{font-size:min(var(--writing-font-size,11px),16px)}}
+/* The visual editor and published Writing posts use the same column layout. */
+article column-set{display:flex;gap:12px;width:100%;align-items:flex-start}
+article column-unit{display:block;flex:1;min-width:0}
+@media(max-width:760px){article column-set{flex-direction:column}}
