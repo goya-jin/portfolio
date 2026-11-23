@@ -8,6 +8,7 @@ globalThis.requestAnimationFrame=dom.window.requestAnimationFrame.bind(dom.windo
 dom.window.Range.prototype.getBoundingClientRect=()=>({top:0,left:0,right:0,bottom:0,width:0,height:0});dom.window.Range.prototype.getClientRects=()=>[];dom.window.HTMLElement.prototype.scrollIntoView=()=>{};
 const React=await import('react');globalThis.React=React;
 const {render,fireEvent,waitFor,cleanup}=await import('@testing-library/react');
+const {default:RichEditor}=await import('../app/components/rich-editor.jsx');
 const {default:Writer}=await import('../app/(owner)/write/writer.jsx');
 test.afterEach(()=>{cleanup();localStorage.clear()});
 function setup({draft=false,error=false}={}){
@@ -34,7 +35,7 @@ async function open(screen){
  await waitFor(()=>assert.equal(screen.getByLabelText('제목').value,'저장된 제목'));
 }
 test('hide preserves unsaved text, hidden save stays hidden, explicit unhide republishes',async()=>{
- const f=setup(),screen=render(<Writer/>);await open(screen);
+ const f=setup(),screen=render(<Writer Editor={RichEditor}/>);await open(screen);
  fireEvent.change(screen.getByLabelText('제목'),{target:{value:'작성 중인 제목'}});
  fireEvent.click(screen.getByRole('button',{name:'숨기기'}));
  await waitFor(()=>assert.ok(screen.getByRole('button',{name:'숨김 상태로 저장'})));
@@ -50,7 +51,7 @@ test('hide preserves unsaved text, hidden save stays hidden, explicit unhide rep
  assert.equal(JSON.parse(f.requests.filter(r=>r.method==='PATCH').at(-1).body).draft,false);
 });
 test('delete cancellation sends nothing; confirmed deletion clears post and its browser draft',async()=>{
- const f=setup(),screen=render(<Writer/>);await open(screen);f.setConfirmed(false);
+ const f=setup(),screen=render(<Writer Editor={RichEditor}/>);await open(screen);f.setConfirmed(false);
  fireEvent.click(screen.getByRole('button',{name:'게시물 삭제'}));
  assert.equal(f.requests.some(r=>r.method==='DELETE'),false);assert.match(f.questions.at(-1),/저장된 제목/);
  f.setConfirmed(true);fireEvent.click(screen.getByRole('button',{name:'게시물 삭제'}));
@@ -60,11 +61,18 @@ test('delete cancellation sends nothing; confirmed deletion clears post and its 
  assert.equal(JSON.parse(localStorage.getItem('goya-owner-draft')).slug,undefined);
 });
 test('failed mutation retains unsaved content, saved revision and public status',async()=>{
- const f=setup({error:true}),screen=render(<Writer/>);await open(screen);
+ const f=setup({error:true}),screen=render(<Writer Editor={RichEditor}/>);await open(screen);
  fireEvent.change(screen.getByLabelText('제목'),{target:{value:'보관할 수정'}});
  fireEvent.click(screen.getByRole('button',{name:'숨기기'}));
  await waitFor(()=>assert.match(screen.getByRole('status').textContent,/다른 곳/));
  assert.equal(screen.getByLabelText('제목').value,'보관할 수정');
  assert.equal(screen.getByRole('button',{name:'숨기기'}).disabled,false);
  assert.equal(JSON.parse(f.requests.find(r=>r.method==='PATCH').body).sha,'a'.repeat(40));
+});
+
+test('publishing flushes the shared visual editor and saves its latest body and layout CSS',async()=>{
+ const f=setup();let latest='<column-set><column-unit><p>마지막 입력</p></column-unit><column-unit><p>두 번째 열</p></column-unit></column-set>';
+ function VisualStub({onReady,editorKey}){React.useEffect(()=>{onReady(async()=>({body:latest,css:'.two{display:flex}',canvas:true}))},[editorKey]);return <p>시각 편집기</p>}
+ const screen=render(<Writer Editor={VisualStub}/>);await open(screen);fireEvent.click(screen.getByRole('button',{name:'수정 게시'}));
+ await waitFor(()=>assert.ok(f.requests.find(r=>r.method==='POST')));const submitted=JSON.parse(f.requests.find(r=>r.method==='POST').body.get('post'));assert.equal(submitted.body,latest);assert.equal(submitted.css,'.two{display:flex}');assert.equal(submitted.canvas,true);
 });

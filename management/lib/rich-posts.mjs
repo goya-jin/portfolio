@@ -1,3 +1,4 @@
+import {cleanCanvasHTML} from './visual-project.mjs';
 import {iframeSource} from './iframe-source.mjs';
 import {BUBBLE_STYLE} from './bubble.mjs';
 import {marked} from 'marked';
@@ -38,3 +39,11 @@ export function editorHTML(body,format='markdown'){
 }
 export function portfolioHTML(html){const $=load(sanitizeRichHTML(html),null,false);$('img,a,video,audio,source').each((_,el)=>{const attr=el.tagName==='a'?'href':'src',src=$(el).attr(attr)||'';if(src.startsWith('../../assets/'))$(el).attr(attr,src.slice(6))});return $.html()}
 
+
+export function writingCanvasHTML(body,format='html'){
+ let html=format==='html'?body:marked.parse(String(body),{breaks:true,gfm:true});
+ const $=load(cleanCanvasHTML(restoreVideoEmbeds(html)),null,false);
+ $('img,video,audio,source').each((_,el)=>{const value=$(el).attr('src')||'';if(value.startsWith('../../assets/'))$(el).attr('src',SITE+value.slice(6));else if(value.startsWith('assets/'))$(el).attr('src',SITE+value)});
+ return $.html();
+}
+export function storedCanvasHTML(body){const $=load(cleanCanvasHTML(body),null,false);$('img,a,video,audio,source').each((_,el)=>{const key=el.name==='a'?'href':'src',value=$(el).attr(key)||'';if(value.startsWith(SITE+'assets/'))$(el).attr(key,'../../'+value.slice(SITE.length))});return $.html()}

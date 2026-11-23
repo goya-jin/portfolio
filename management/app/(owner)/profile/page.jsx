@@ -1,2 +1,2 @@
-import ProfileEditor from './profile-editor';
-export default function Profile(){return <main><h1>프로필 편집</h1><ProfileEditor/></main>}
+import VisualProfileEditor from './visual-profile-editor';
+export default function Profile(){return <main className="projects-workspace"><h1>About 편집</h1><VisualProfileEditor/></main>}

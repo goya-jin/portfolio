@@ -1,0 +1,8 @@
+'use client';
+import React,{lazy,Suspense,useMemo} from 'react';
+const Canvas=lazy(()=>import('./project-canvas'));
+const escape=s=>String(s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+export default function WritingCanvas({value='',css='',editorKey=0,slug,sha,title,date,settings,onChange,onDirty,onReady,onBusyChange,onMessage,disabled}){
+ const snapshot=useMemo(()=>({sha:sha||'new',document:{styles:['https://goya-jin.github.io/portfolio/writing/writing.css'],css:':root{--writing-font-size:11px;--writing-line-height:1.4;--writing-paragraph-gap:1.2em}column-set{display:flex;gap:12px}column-unit{flex:1;min-width:0}@media(max-width:760px){column-set{flex-direction:column}}',customCSS:css,body:'<header><p>~goya jin</p><nav>About · Posts · Portfolio</nav></header><main><article data-canvas-root="true"><h1 data-canvas-chrome="true" data-canvas-title="true">'+escape(title)+'</h1><p data-canvas-chrome="true"><time data-canvas-date="true">'+escape(date)+'</time></p>'+(value||'<p><br></p>')+'</article></main><footer><hr><p>Goya Jin · Email</p></footer>'}}),[editorKey]);
+ return <Suspense fallback={<p>편집기를 준비하는 중…</p>}><Canvas key={editorKey} document={snapshot.document} path={'writing-'+(slug||'new')} sha={snapshot.sha} typography={settings} chromeTitle={title} chromeDate={date} onReady={reader=>onReady?.(async()=>{const data=await reader();return {body:data.html,css:data.css,canvas:true}})} onChange={data=>onChange(data.html,data.css)} onDirty={onDirty} onBusyChange={onBusyChange} onMessage={onMessage} disabled={disabled}/></Suspense>
+}

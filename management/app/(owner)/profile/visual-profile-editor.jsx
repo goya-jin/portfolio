@@ -1,0 +1,11 @@
+'use client';
+import {useEffect,useRef,useState} from 'react';
+import ProjectCanvas from '../../components/project-canvas';
+import SiteTypography from '../../components/site-typography';
+export default function VisualProfileEditor(){
+ const [loaded,setLoaded]=useState(null),[busy,setBusy]=useState(false),[uploading,setUploading]=useState(false),[ready,setReady]=useState(false),[dirty,setDirty]=useState(false),[message,setMessage]=useState('About 페이지를 불러오는 중…'),[url,setURL]=useState('');const read=useRef(null);
+ useEffect(()=>{fetch('/api/profile?visual=1',{cache:'no-store'}).then(async r=>{const d=await r.json();if(!r.ok)throw Error(d.error);setLoaded(d);setMessage('본문을 클릭해 입력하세요.')}).catch(e=>setMessage(e.message))},[]);
+ useEffect(()=>{const before=e=>{if(dirty||uploading){e.preventDefault();e.returnValue=''}};window.addEventListener('beforeunload',before);return()=>window.removeEventListener('beforeunload',before)},[dirty,uploading]);
+ async function save(){if(!read.current||busy||uploading)return;setBusy(true);try{const canvas=await read.current(),r=await fetch('/api/profile',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({sha:loaded.sha,canvas})}),d=await r.json();if(!r.ok)throw Error(d.error);localStorage.removeItem('goya-project-canvas:info.html');setLoaded(d);setReady(false);setDirty(false);setURL(d.url);setMessage('저장했습니다. 공개 사이트에 보통 1–2분 뒤 반영됩니다.')}catch(e){setMessage(e.message)}finally{setBusy(false)}}
+ return <div className="project-studio"><div className="studio-topbar"><h2>About</h2><span className="toolbar-spacer"/>{dirty&&<small>저장하지 않은 수정</small>}<button type="button" className="primary" disabled={!ready||busy||uploading} onClick={save}>{busy?'저장 중…':uploading?'사진 업로드 중…':'저장·사이트 반영'}</button></div><p role="status" className="studio-status">{message} {url&&<a href={url} target="_blank" rel="noopener noreferrer">공개 페이지 보기</a>}</p>{loaded&&<ProjectCanvas key={loaded.sha} path="info.html" sha={loaded.sha} document={loaded.canvas} disabled={busy} onBusyChange={setUploading} onReady={r=>{read.current=r;setReady(true)}} onChange={()=>setDirty(true)} onMessage={setMessage}/>}<div className="studio-footer"><SiteTypography onMessage={setMessage}/></div></div>
+}

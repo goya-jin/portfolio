@@ -48,7 +48,10 @@ def load_posts():
         posts.append(dict(meta, slug=slug, body=body))
     return sorted(posts, key=lambda p: (p['date'], p['slug']), reverse=True)
 
-def page(title, body, depth=0, current=''):
+def page(title, body, depth=0, current='', custom_css=''):
+    if not isinstance(custom_css, str) or len(custom_css) > 250000 or re.search(r'<|@import|expression\s*\(|javascript\s*:|behavior\s*:|-moz-binding', custom_css, re.I):
+        raise ValueError('Invalid post CSS')
+    post_style = '<style id="writing-custom-style">' + custom_css + '</style>' if custom_css else ''
     prefix = '../' * depth
     variables = typography()
     html_style = f' style="{variables}"' if variables else ''
@@ -58,7 +61,7 @@ def page(title, body, depth=0, current=''):
     return f'''<!doctype html>
 <html lang="ko"{html_style}><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{e(title)} — Goya Jin</title><meta name="description" content="Goya Jin의 글과 기록.">
-<link rel="stylesheet" href="{prefix}writing.css?v={css_version}"></head>
+<link rel="stylesheet" href="{prefix}writing.css?v={css_version}">{post_style}</head>
 <body><header><p><a href="{prefix}index.html">~goya jin</a></p><nav aria-label="주요 메뉴">{nav}</nav></header>
 <main id="content">{body}</main><footer><hr><p>Goya Jin · <a href="mailto:09190kk@gmail.com">Email</a></p></footer>{social_script}</body></html>'''
 
@@ -107,7 +110,7 @@ def build():
         body += '</nav>'
         folder = DEST/post['slug']
         folder.mkdir()
-        (folder/'index.html').write_text(page(post['title'], body, depth=1), encoding='utf-8')
+        (folder/'index.html').write_text(page(post['title'], body, depth=1, custom_css=post.get('css', '')), encoding='utf-8')
     # Version every local HTML navigation URL, not only the stylesheet.
     # Otherwise a new page can navigate back into a browser-cached old menu.
     inputs = [Path(__file__), DEST/'writing.css', *sorted(SOURCE.glob('*.md'))]

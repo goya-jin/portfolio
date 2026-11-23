@@ -21,6 +21,8 @@ class WritingBuildTests(unittest.TestCase):
             (root/'content/writing-settings.json').write_text(json.dumps(settings))
             for slug,format,body in [('legacy','markdown','2026. 09.03\n첫 문장\n다음 문장'),('rich','html','<p>앞</p><figure><img src="../../assets/photo.jpg"></figure><p>뒤</p><blockquote class="twitter-tweet"><p>tweet</p></blockquote>')]:
                 meta = {'title':slug,'date':'2026-11-04','draft':False,'format':format}
+                if slug == 'rich':
+                    meta.update(canvas=True, css='.canvas-proof{display:flex;gap:24px}')
                 (root/f'content/posts/{slug}.md').write_text(json.dumps(meta)+'\n---\n'+body)
             old = writing.ROOT, writing.SOURCE, writing.DEST, writing.TYPOGRAPHY
             writing.ROOT, writing.SOURCE, writing.DEST, writing.TYPOGRAPHY = root, root/'content/posts', root/'writing', root/'content/writing-settings.json'
@@ -40,6 +42,7 @@ class WritingBuildTests(unittest.TestCase):
                 self.assertLess(rich.index('<p>앞'), rich.index('<figure'))
                 self.assertLess(rich.index('<figure'), rich.index('<p>뒤'))
                 self.assertIn('https://platform.twitter.com/widgets.js', rich)
+                self.assertIn('<style id="writing-custom-style">.canvas-proof{display:flex;gap:24px}</style>', rich)
                 writing.build()
                 self.assertEqual((root/'index.html').read_text().count('id="site-typography"'), 1)
                 self.assertEqual((root/'index.html').read_text().count('id="site-freshness"'), 1)

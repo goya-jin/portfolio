@@ -1,10 +1,10 @@
 import {managePost} from '../../../lib/post-management.mjs';
 import {randomUUID} from 'node:crypto';
-import {editorHTML} from '../../../lib/rich-posts.mjs';
+import {writingCanvasHTML,editorHTML} from '../../../lib/rich-posts.mjs';
 import {requireOwner} from '../../../lib/owner';
 import {github,decodeFile} from '../../../lib/github';
 import {validatePost,parsePost,serializePost,ext} from '../../../lib/posts.mjs';
-export async function GET(request){const access=await requireOwner(request);if(access.error)return access.error;try{const slug=new URL(request.url).searchParams.get('slug');if(slug){if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))throw Error('글 주소를 확인해 주세요.');const f=await github(access.token,`/contents/content/posts/${slug}.md?ref=main`);const post=parsePost(decodeFile(f));return Response.json({sha:f.sha,slug,...post,editorHtml:editorHTML(post.body,post.format)},{headers:{'Cache-Control':'no-store'}})}const snapshot=await github(access.token,'/git/trees/main?recursive=1'),posts=[];
+export async function GET(request){const access=await requireOwner(request);if(access.error)return access.error;try{const slug=new URL(request.url).searchParams.get('slug');if(slug){if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))throw Error('글 주소를 확인해 주세요.');const f=await github(access.token,`/contents/content/posts/${slug}.md?ref=main`);const post=parsePost(decodeFile(f));return Response.json({sha:f.sha,slug,...post,canvasHtml:writingCanvasHTML(post.body,post.format),editorHtml:editorHTML(post.body,post.format)},{headers:{'Cache-Control':'no-store'}})}const snapshot=await github(access.token,'/git/trees/main?recursive=1'),posts=[];
  if(snapshot.truncated)throw Error('저장소 파일을 전부 확인하지 못했습니다.');
  const files=snapshot.tree.filter(f=>f.type==='blob'&&/^content\/posts\/[a-z0-9-]+\.md$/.test(f.path)).map(f=>({...f,name:f.path.split('/').pop()}));
  for(let i=0;i<files.length;i+=6){posts.push(...await Promise.all(files.slice(i,i+6).map(async f=>{
@@ -22,7 +22,7 @@ export async function POST(request){const access=await requireOwner(request,true
  const content=serializePost(p,uploads),blob=await github(access.token,'/git/blobs','POST',{content,encoding:'utf-8'});entries.push({path,mode:'100644',type:'blob',sha:blob.sha});
  const updated=await github(access.token,'/git/trees','POST',{base_tree:base.tree.sha,tree:entries}),commit=await github(access.token,'/git/commits','POST',{message:`${editing?'Update':'Publish'} writing: ${p.title.trim()}`,tree:updated.sha,parents:[head]});
  if((await github(access.token,'/git/ref/heads/main')).object.sha!==head)return Response.json({error:'동시에 다른 수정이 있었습니다. 내용을 보관한 뒤 다시 게시해 주세요.'},{status:409});
- await github(access.token,'/git/refs/heads/main','PATCH',{sha:commit.sha,force:false});return Response.json({slug:p.slug,sha:blob.sha,draft:parsePost(content).draft,body:parsePost(content).body,editorHtml:editorHTML(parsePost(content).body,p.format),url:`https://goya-jin.github.io/portfolio/writing/${p.slug}/index.html?v=${commit.sha.slice(0,12)}`});
+ await github(access.token,'/git/refs/heads/main','PATCH',{sha:commit.sha,force:false});return Response.json({slug:p.slug,sha:blob.sha,draft:parsePost(content).draft,body:parsePost(content).body,css:parsePost(content).css||'',canvasHtml:writingCanvasHTML(parsePost(content).body,p.format),editorHtml:editorHTML(parsePost(content).body,p.format),url:`https://goya-jin.github.io/portfolio/writing/${p.slug}/index.html?v=${commit.sha.slice(0,12)}`});
  }catch(e){return Response.json({error:e.message},{status:400})}}
 
 
