@@ -4,6 +4,7 @@ on:
     branches: [main]
   workflow_dispatch:
 permissions:
+  actions: read
   contents: read
   pages: write
   id-token: write
@@ -39,6 +40,29 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
+          name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Wait for deployment artifact metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_NAME: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          python - <<'PY'
+          import json, os, time, urllib.request
+          name = os.environ['ARTIFACT_NAME']
+          url = f"{os.environ['GITHUB_API_URL']}/repos/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}/artifacts?name={name}"
+          request = urllib.request.Request(url, headers={'Authorization': 'Bearer ' + os.environ['GH_TOKEN'], 'Accept': 'application/vnd.github+json'})
+          for attempt in range(12):
+              with urllib.request.urlopen(request, timeout=10) as response:
+                  artifacts = json.load(response)['artifacts']
+              if sum(a['name'] == name and not a['expired'] for a in artifacts) == 1:
+                  print('Deployment artifact is ready.')
+                  break
+              time.sleep(3)
+          else:
+              raise SystemExit('Deployment artifact metadata is not ready; re-run the failed job.')
+          PY
       - uses: actions/deploy-pages@v4
         id: deployment
+        with:
+          artifact_name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
 
