@@ -76,3 +76,19 @@ test('publishing flushes the shared visual editor and saves its latest body and 
  const screen=render(<Writer Editor={VisualStub}/>);await open(screen);fireEvent.click(screen.getByRole('button',{name:'수정 게시'}));
  await waitFor(()=>assert.ok(f.requests.find(r=>r.method==='POST')));const submitted=JSON.parse(f.requests.find(r=>r.method==='POST').body.get('post'));assert.equal(submitted.body,latest);assert.equal(submitted.css,'.two{display:flex}');assert.equal(submitted.canvas,true);
 });
+
+test('publish does not rely on a native confirmation dialog and shows the result beside the button',async()=>{
+ const f=setup();f.setConfirmed(false);
+ const screen=render(<Writer Editor={RichEditor}/>);await open(screen);
+ fireEvent.click(screen.getByRole('button',{name:'수정 게시'}));
+ await waitFor(()=>assert.ok(f.requests.find(r=>r.method==='POST')));
+ assert.equal(f.questions.length,0);
+ await waitFor(()=>assert.match(screen.container.querySelector('.publish-status').textContent,/게시했습니다/));
+});
+test('invalid title reports an inline error instead of silently blocking native form submission',async()=>{
+ const f=setup();const screen=render(<Writer Editor={RichEditor}/>);await open(screen);
+ fireEvent.change(screen.getByLabelText('제목'),{target:{value:''}});
+ fireEvent.click(screen.getByRole('button',{name:'수정 게시'}));
+ await waitFor(()=>assert.match(screen.getByRole('status').textContent,/제목과 게시 날짜/));
+ assert.equal(f.requests.some(r=>r.method==='POST'),false);
+});
