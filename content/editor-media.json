@@ -1660,8 +1660,13 @@
     "name": "-2019-11-26--10.14.55_1340_c.png"
   },
   {
-    "name": "-2019-11-26--10.16.27_1340_c.png",
+    "ref": "image333",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/f97ffdc4173d40ee8433737121701de4.png",
-    "ref": "image333"
+    "name": "-2019-11-26--10.16.27_1340_c.png"
+  },
+  {
+    "name": "-2019-11-26--10.14.29_1340_c.png",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/c6cae6a7d922415eb7e281c7bbbf7361.png",
+    "ref": "image334"
   }
 ]
