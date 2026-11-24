@@ -1720,8 +1720,18 @@
     "name": "스크린샷_2024-09-29_오후_6.43.39.png"
   },
   {
-    "name": "C0290022-1868_darwin_pigeon_breeds_illustration.jpg",
+    "ref": "image345",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/e033f90de0f747f3ac6657c9a654cc3a.jpg",
-    "ref": "image345"
+    "name": "C0290022-1868_darwin_pigeon_breeds_illustration.jpg"
+  },
+  {
+    "name": "C0290022-1868_darwin_pigeon_breeds_illustration.jpg",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/811b9f648c864cf3bfe7d593f8d9063c.jpg",
+    "ref": "image346"
+  },
+  {
+    "name": "Origin_of_Species_title_page.jpg",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/1b4574a8c0224002b087f846c347333c.jpg",
+    "ref": "image347"
   }
 ]
