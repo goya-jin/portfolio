@@ -1,5 +1,5 @@
 // Use the ID returned by the upload step, avoiding a second artifact-list service.
-module.exports = async function deployPages({github, context, core, artifactId, delay = ms => new Promise(resolve => setTimeout(resolve, ms)), attempts = 120}) {
+async function deployPagesOnce({github, context, core, artifactId, delay = ms => new Promise(resolve => setTimeout(resolve, ms)), attempts = 120}) {
   if (!/^\d+$/.test(String(artifactId || ''))) throw Error('Missing uploaded Pages artifact ID');
   const params = {...context.repo};
   const token = await core.getIDToken();
@@ -27,8 +27,20 @@ module.exports = async function deployPages({github, context, core, artifactId, 
       core.setOutput('status', 'succeed');
       return;
     }
-    if (failed.has(state.status)) throw Error(`Pages deployment failed: ${state.status}`);
+    if (failed.has(state.status)) throw Object.assign(Error(`Pages deployment failed: ${state.status}`), {code:state.status==='deployment_failed'?'PAGES_TRANSIENT_FAILURE':'PAGES_FINAL_FAILURE'});
     core.info(`Pages deployment: ${state.status}`);
   }
   throw Error(`Pages deployment ${deploymentId} did not finish within 10 minutes`);
+};
+
+// Only retry after GitHub has explicitly marked the prior deployment failed.
+module.exports = async function deployPages(options) {
+  for (let attempt=0;attempt<3;attempt++) {
+    try { return await deployPagesOnce(options); }
+    catch(error) {
+      if(error.code!=='PAGES_TRANSIENT_FAILURE'||attempt===2)throw error;
+      options.core.warning('GitHub Pages reported a failed deployment; retrying the same uploaded artifact.');
+      await (options.delay|| (ms=>new Promise(resolve=>setTimeout(resolve,ms))))(10000);
+    }
+  }
 };
