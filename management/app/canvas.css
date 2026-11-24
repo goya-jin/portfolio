@@ -2,3 +2,6 @@
 @media(max-width:700px){.projects-workspace{padding:16px 10px}.studio-topbar label{width:100%}.studio-topbar select{flex:1;min-width:0;max-width:100%}.canvas-toolbar button{padding:8px 7px}.canvas-toolbar{gap:0}.text-tools .toolbar-spacer{display:none}.attachment-strip{grid-template-columns:repeat(3,minmax(0,1fr))}.selection-tools{gap:6px}.canvas-hint{line-height:1.5}}
 
 .canvas-toolbar input[type=color]{display:block;width:28px;height:28px;padding:3px;margin:0 4px;border:0;background:transparent;cursor:pointer}
+
+/* Show layout controls without exposing internal paragraph/component badges. */
+.visual-editor .gjs-badge,.visual-editor .gjs-selected-parent{display:none!important}.visual-editor.is-writing .gjs-highlighter,.visual-editor.is-writing .gjs-toolbar{display:none!important}
