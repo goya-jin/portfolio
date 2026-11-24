@@ -1640,8 +1640,13 @@
     "name": "피부 보정 가이드와 흐린 인물 사진.png"
   },
   {
-    "name": "피부 보정 가이드와 흐린 인물 사진.png",
+    "ref": "image329",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/38ea830b625243898463266c041cb0c3.png",
-    "ref": "image329"
+    "name": "피부 보정 가이드와 흐린 인물 사진.png"
+  },
+  {
+    "name": "핑크 주석의 뷰티 리터칭 가이드.png",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/b9b3f7ccb62d4cc8999d2d8a32dcc5ec.png",
+    "ref": "image330"
   }
 ]
