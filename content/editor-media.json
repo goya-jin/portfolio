@@ -1610,8 +1610,13 @@
     "name": "12.11.png"
   },
   {
-    "name": "12.12.jpg",
+    "ref": "image323",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/2573dd98bac944c999e884dcdf8ac9ad.jpg",
-    "ref": "image323"
+    "name": "12.12.jpg"
+  },
+  {
+    "name": "스크린샷_2024-09-29_오후_6.43.39.png",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/9d1bfe7438d34d2eba78f2ec234eefcc.png",
+    "ref": "image324"
   }
 ]
