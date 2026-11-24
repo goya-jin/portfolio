@@ -1600,8 +1600,13 @@
     "name": "Origin_of_Species_title_page.jpg"
   },
   {
-    "name": "12.10.jpg",
+    "ref": "image321",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/8d06345b77444578a995b3e85ca0725a.jpg",
-    "ref": "image321"
+    "name": "12.10.jpg"
+  },
+  {
+    "name": "12.11.png",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/250bffe0c1c940409ae55f197ac4fba9.png",
+    "ref": "image322"
   }
 ]
