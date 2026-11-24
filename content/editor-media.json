@@ -1590,8 +1590,13 @@
     "name": "6head.jpg"
   },
   {
-    "name": "12..jpg",
+    "ref": "image319",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/4d5b1dfca8494456b6e0b9d0771bdaea.jpg",
-    "ref": "image319"
+    "name": "12..jpg"
+  },
+  {
+    "name": "Origin_of_Species_title_page.jpg",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/56fc6df95fd14928bc56dc6b2cc7c8ad.jpg",
+    "ref": "image320"
   }
 ]
