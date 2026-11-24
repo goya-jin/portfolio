@@ -80,3 +80,7 @@ article hr{height:0;border:0;border-top:1px solid #555;margin:var(--writing-para
  .writing-reading-panel+.writing-reading-panel{border-left:0;border-top:1px solid #aaa;padding:24px 0 0;margin-top:32px}
   .writing-reading-panel>article{scroll-margin-top:20px}
 }
+
+
+/* Keep image pairs side by side on wide screens and stack them on mobile. */
+main [data-visual-photos="2"]{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}main [data-visual-photos="2"]>figure{min-width:0}@media(max-width:760px){main [data-visual-photos="2"]{grid-template-columns:minmax(0,1fr)!important}}

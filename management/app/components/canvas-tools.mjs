@@ -40,14 +40,19 @@ export async function insertCanvasBlock(editor,html,remembered){
 }
 export function columnHTML(count=2){return `<column-set data-visual-columns="${count}" style="display:flex;gap:12px;margin:0 0 var(--writing-paragraph-gap,1.2em)">${Array.from({length:count},()=>'<column-unit style="flex:1;min-width:0"><p data-gjs-type="text" style="min-height:1.4em"><br></p></column-unit>').join('')}</column-set>`}
 export function photoHTML(items){
- const images=items.map(i=>`<figure style="margin:0;width:100%"><img src="${escapeHTML(i.src)}" alt="${escapeHTML(i.name)}" style="width:100%;height:auto"/></figure>`).join('');
- return items.length===2?`<div data-visual-photos="2" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 var(--writing-paragraph-gap,1.2em)">${images}</div>`:images;
+ const figures=items.map(i=>`<figure style="margin:0;width:100%"><img src="${escapeHTML(i.src)}" alt="${escapeHTML(i.name)}" style="width:100%;height:auto"/></figure>`);
+ const rows=[];
+ for(let i=0;i<figures.length;i+=2){
+  if(figures[i+1])rows.push(`<div data-visual-photos="2" style="display:grid;gap:12px;margin:0 0 var(--writing-paragraph-gap,1.2em)">${figures[i]}${figures[i+1]}</div>`);
+  else rows.push(figures[i]);
+ }
+ return rows.join('');
 }
 export function pairNextPhoto(editor){
  const c=selectedBlock(editor);if(!c||c.get('tagName')!=='figure')return false;
  const parent=c.parent(),next=parent.components().at(c.index()+1);if(!next||next.get('tagName')!=='figure')return false;
  const html=[c,next].map(n=>{n.addStyle({width:'100%',margin:'0'});return n.toHTML()}).join(''),index=c.index();
- next.remove();c.remove();const added=parent.append(`<div data-visual-photos="2" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 var(--writing-paragraph-gap,1.2em)">${html}</div>`,{at:index});editor.select(added[0]);return true;
+ next.remove();c.remove();const added=parent.append(`<div data-visual-photos="2" style="display:grid;gap:12px;margin:0 0 var(--writing-paragraph-gap,1.2em)">${html}</div>`,{at:index});editor.select(added[0]);return true;
 }
 export function splitPhotoRow(editor){const c=selectedBlock(editor);let row=c;if(!row?.getAttributes()['data-visual-photos'])row=c?.parent();if(!row?.getAttributes()['data-visual-photos'])return false;const parent=row.parent(),index=row.index(),html=row.components().map(n=>n.toHTML()).join('');row.remove();editor.select(parent.append(html,{at:index})[0]);return true}
 export function exportCanvas(editor){const main=mainComponent(editor);if(!main)throw Error('본문을 확인하지 못했습니다.');return {html:main.components().filter(c=>!c.getAttributes()['data-canvas-chrome']).map(c=>c.toHTML()).join(''),css:editor.getCss()||''}}

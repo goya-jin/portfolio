@@ -85,3 +85,7 @@ body{font-weight:500}
 
 /* Simple two-column text editing and matching published layout. */
 main column-set[data-text-columns]{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:var(--column-gap,12px);row-gap:12px;align-items:start;margin-bottom:var(--writing-paragraph-gap,1.2em)}main column-set[data-text-columns][data-text-ratio="left"]{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}main column-set[data-text-columns][data-text-ratio="right"]{grid-template-columns:minmax(0,1fr) minmax(0,2fr)}main column-set[data-text-columns]>column-unit[data-text-cell]{display:block;min-width:0;width:auto;max-width:100%;min-height:1.5em}main [data-text-cell]>:first-child{margin-top:0}main [data-text-cell]>:last-child{margin-bottom:0}@media(max-width:760px){main column-set[data-text-columns],main column-set[data-text-columns][data-text-ratio]{grid-template-columns:minmax(0,1fr)}}
+
+
+/* Keep image pairs side by side on wide screens and stack them on mobile. */
+main [data-visual-photos="2"]{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}main [data-visual-photos="2"]>figure{min-width:0}@media(max-width:760px){main [data-visual-photos="2"]{grid-template-columns:minmax(0,1fr)!important}}
