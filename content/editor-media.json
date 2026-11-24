@@ -1635,8 +1635,13 @@
     "name": "스크린샷_2024-09-29_오전_12.20.38.png"
   },
   {
-    "name": "피부 보정 가이드와 흐린 인물 사진.png",
+    "ref": "image328",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/ec38cac6e5a14d8dad58f04d659371bc.png",
-    "ref": "image328"
+    "name": "피부 보정 가이드와 흐린 인물 사진.png"
+  },
+  {
+    "name": "피부 보정 가이드와 흐린 인물 사진.png",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/38ea830b625243898463266c041cb0c3.png",
+    "ref": "image329"
   }
 ]
