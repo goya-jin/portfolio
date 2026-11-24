@@ -1565,8 +1565,13 @@
     "name": "2.jpg"
   },
   {
-    "name": "3.jpg",
+    "ref": "image314",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/b87f9f0b8d5e4118b4abeb65dfe4b27e.jpg",
-    "ref": "image314"
+    "name": "3.jpg"
+  },
+  {
+    "name": "1 big.jpeg",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/4eae0a3b623842b69d3ea92d2dcf4c00.jpeg",
+    "ref": "image315"
   }
 ]
