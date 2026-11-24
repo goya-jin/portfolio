@@ -1,5 +1,3 @@
-{"title":"Catfish","date":"2025-02-23","draft":false}
+{"title":"AI is still confused by the word \"CATFISH.\"","date":"2025-02-23","draft":false,"format":"html","canvas":true,"css":""}
 ---
-AI is still confused of the word "CATFISH"
-
-![Artwork](https://freight.cargo.site/w/1024/q/75/i/M2692491365653525363883697519549/flux_krea_00058_.png)
+<p><strong>AI is still confused by the word "CATFISH."</strong></p><figure data-writing-image="true" style="width: 70%;"><img src="../../assets/writing/uploads/9718fa80a9a6434a9cb2d9fb25fef567.png" alt="flux_krea_00013_ 2.PNG"></figure><p></p>
