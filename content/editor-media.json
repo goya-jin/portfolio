@@ -1585,8 +1585,13 @@
     "name": "resize12.2.jpg"
   },
   {
-    "name": "6head.jpg",
+    "ref": "image318",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/9e4acd61d5454e8b94b3a71773fcfb57.jpg",
-    "ref": "image318"
+    "name": "6head.jpg"
+  },
+  {
+    "name": "12..jpg",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/4d5b1dfca8494456b6e0b9d0771bdaea.jpg",
+    "ref": "image319"
   }
 ]
