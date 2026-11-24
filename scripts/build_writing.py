@@ -1,13 +1,14 @@
 """Build the writing section without touching portfolio content."""
 from pathlib import Path
 from datetime import date
-from html import escape as e
+from html import escape as e, unescape
 import hashlib
 import os
 import json
 import re
 import shutil
 import markdown
+import tinycss2
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / 'content/posts'
@@ -48,7 +49,47 @@ def load_posts():
         posts.append(dict(meta, slug=slug, body=body))
     return sorted(posts, key=lambda p: (p['date'], p['slug']), reverse=True)
 
-def page(title, body, depth=0, current='', custom_css=''):
+def scoped_group_css(css, scope):
+    if not isinstance(css, str) or len(css) > 250000 or re.search(r'<|@import|expression\s*\(|javascript\s*:|behavior\s*:|-moz-binding', css, re.I):
+        raise ValueError('Invalid group CSS')
+    def rewrite(rules):
+        output = []
+        for rule in rules:
+            if rule.type == 'qualified-rule':
+                groups, group = [], []
+                for token in rule.prelude:
+                    if token.type == 'literal' and token.value == ',':
+                        groups.append(tinycss2.serialize(group).strip()); group = []
+                    else:
+                        group.append(token)
+                groups.append(tinycss2.serialize(group).strip())
+                selectors = []
+                for selector in groups:
+                    selector = re.sub(r'^(?:(?:html|body|article|:root)(?:\s+|$))+', '', selector).strip()
+                    selectors.append(scope + (' ' + selector if selector else ''))
+                rule.prelude = tinycss2.parse_component_value_list(','.join(selectors))
+                output.append(rule)
+            elif rule.type == 'at-rule' and rule.content is not None and rule.lower_at_keyword in ('media', 'supports', 'container', 'layer'):
+                nested = rewrite(tinycss2.parse_rule_list(rule.content, skip_comments=True, skip_whitespace=True))
+                rule.content = tinycss2.parse_component_value_list(nested)
+                output.append(rule)
+        return tinycss2.serialize(output)
+    return rewrite(tinycss2.parse_stylesheet(css, skip_comments=True, skip_whitespace=True))
+
+
+def has_group_content(html):
+    return bool(re.search(r'<(?:img|video|iframe|audio|table|hr)\b', html, re.I) or unescape(re.sub(r'<[^>]*>', '', html)).strip())
+
+
+def split_body(title, date_value, first, second):
+    return (f'<section class="reading-document"><header class="reading-post-heading"><h1>{e(title)}</h1><p><time datetime="{e(date_value)}">{e(date_value)}</time></p></header>'
+            '<div class="writing-reading-columns">'
+            '<section class="writing-reading-panel" role="region" tabindex="0" aria-label="그룹 1 본문"><article id="writing-group-1">' + first + '</article></section>'
+            '<section class="writing-reading-panel" role="region" tabindex="0" aria-label="그룹 2 본문"><article id="writing-group-2">' + second + '</article></section>'
+            '</div></section>')
+
+
+def page(title, body, depth=0, current='', custom_css='', splitView=False):
     if not isinstance(custom_css, str) or len(custom_css) > 250000 or re.search(r'<|@import|expression\s*\(|javascript\s*:|behavior\s*:|-moz-binding', custom_css, re.I):
         raise ValueError('Invalid post CSS')
     post_style = '<style id="writing-custom-style">' + custom_css + '</style>' if custom_css else ''
@@ -58,11 +99,12 @@ def page(title, body, depth=0, current='', custom_css=''):
     social_script = '<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>' if 'twitter-tweet' in body and 'platform.twitter.com/widgets.js' not in body else ''
     css_version = hashlib.sha256((DEST / "writing.css").read_bytes()).hexdigest()[:12]
     nav = ' · '.join(f'<a href="{href}"' + (' aria-current="page"' if label == current else '') + f'>{label}</a>' for label, href in [('About', prefix+'../info.html'), ('Posts', prefix+'index.html'), ('Portfolio', prefix+'../index.html')])
+    body_class = ' class="split-post"' if splitView else ''
     return f'''<!doctype html>
 <html lang="ko"{html_style}><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{e(title)} — Goya Jin</title><meta name="description" content="Goya Jin의 글과 기록.">
 <link rel="stylesheet" href="{prefix}writing.css?v={css_version}">{post_style}</head>
-<body><header><p><a href="{prefix}index.html">~goya jin</a></p><nav aria-label="주요 메뉴">{nav}</nav></header>
+<body{body_class}><header><p><a href="{prefix}index.html">~goya jin</a></p><nav aria-label="주요 메뉴">{nav}</nav></header>
 <main id="content">{body}</main><footer><hr><p>Goya Jin · <a href="mailto:09190kk@gmail.com">Email</a></p></footer>{social_script}</body></html>'''
 
 def row(p):
@@ -102,7 +144,26 @@ def build():
     (DEST/'archive.html').write_text(redirect, encoding='utf-8')
     for i, post in enumerate(posts):
         html = render_body(post['body'], post.get('format', 'markdown'))
-        body = f'<article><h1>{e(post["title"])}</h1><p><time datetime="{post["date"]}">{post["date"]}</time></p>{html}</article><hr><nav aria-label="글 이동"><p><a href="../index.html">← 글 목록</a></p>'
+        splitView = post.get('splitView') is True
+        custom_css = post.get('css', '')
+        if splitView:
+            secondary = post.get('secondGroup') or {}
+            second_html = render_body(secondary.get('body', ''), secondary.get('format', 'html'))
+            first_on = post.get('firstGroupEnabled') is not False and has_group_content(html)
+            second_on = secondary.get('enabled') is not False and has_group_content(second_html)
+            if first_on and second_on:
+                content = split_body(post['title'], post['date'], html, second_html)
+                custom_css = scoped_group_css(custom_css, '#writing-group-1') + scoped_group_css(secondary.get('css', ''), '#writing-group-2')
+            else:
+                group_id = 'writing-group-1' if first_on else 'writing-group-2'
+                selected_html = html if first_on else second_html if second_on else ''
+                selected_css = custom_css if first_on else secondary.get('css', '') if second_on else ''
+                content = f'<article id="{group_id}"><h1>{e(post["title"])}</h1><p><time datetime="{post["date"]}">{post["date"]}</time></p>{selected_html}</article>'
+                custom_css = scoped_group_css(selected_css, '#' + group_id)
+                splitView = False
+        else:
+            content = f'<article><h1>{e(post["title"])}</h1><p><time datetime="{post["date"]}">{post["date"]}</time></p>{html}</article>'
+        body = content + '<hr><nav aria-label="글 이동"><p><a href="../index.html">← 글 목록</a></p>'
         for label, neighbor in [('이전 글', i+1), ('다음 글', i-1)]:
             if 0 <= neighbor < len(posts):
                 p = posts[neighbor]
@@ -110,7 +171,7 @@ def build():
         body += '</nav>'
         folder = DEST/post['slug']
         folder.mkdir()
-        (folder/'index.html').write_text(page(post['title'], body, depth=1, custom_css=post.get('css', '')), encoding='utf-8')
+        (folder/'index.html').write_text(page(post['title'], body, depth=1, custom_css=custom_css, splitView=splitView), encoding='utf-8')
     # Version every local HTML navigation URL, not only the stylesheet.
     # Otherwise a new page can navigate back into a browser-cached old menu.
     inputs = [Path(__file__), DEST/'writing.css', *sorted(SOURCE.glob('*.md'))]

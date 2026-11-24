@@ -83,6 +83,73 @@ class WritingBuildTests(unittest.TestCase):
             finally:
                 writing.ROOT, writing.SOURCE, writing.DEST, writing.TYPOGRAPHY = old
 
+class BilingualBuildTests(unittest.TestCase):
+    def test_splitView_publication_scopes_styles_preserves_sources_and_can_be_disabled(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root/'content/posts').mkdir(parents=True)
+            (root/'writing').mkdir()
+            (root/'writing/writing.css').write_text('/* public */')
+            (root/'freshness.js').write_text('/* freshness */')
+            meta = {'title':'Both languages','date':'2026-11-24','draft':False,'format':'html','canvas':True,'css':'#same{color:red}@media(max-width:760px){p{font-size:12px}}','splitView':True,'secondGroup':{'body':'<p id="same">EN ONLY</p><figure><img src="../../assets/en.jpg"><figcaption><a href="https://example.com/source">English source</a></figcaption></figure>','format':'html','css':'#same{color:blue}'}}
+            ko = '<p id="same">KO ONLY</p><figure><img src="../../assets/ko.jpg"><figcaption>Korean caption</figcaption></figure>'
+            source = root/'content/posts/both.md'
+            source.write_text(json.dumps(meta)+'\n---\n'+ko)
+            (root/'content/posts/single.md').write_text(json.dumps({'title':'Single','date':'2026-11-23','format':'html'})+'\n---\n<p>single body</p>')
+            old = writing.ROOT, writing.SOURCE, writing.DEST, writing.TYPOGRAPHY
+            writing.ROOT, writing.SOURCE, writing.DEST, writing.TYPOGRAPHY = root, root/'content/posts', root/'writing', root/'content/writing-settings.json'
+            try:
+                writing.build()
+                html = (root/'writing/both/index.html').read_text()
+                self.assertIn('class="split-post"', html)
+                self.assertIn('aria-label="그룹 1 본문"', html)
+                self.assertIn('aria-label="그룹 2 본문"', html)
+                self.assertLess(html.index('KO ONLY'), html.index('EN ONLY'))
+                self.assertIn('../../assets/ko.jpg', html)
+                self.assertIn('../../assets/en.jpg', html)
+                self.assertIn('English source', html)
+                self.assertIn('#writing-group-1 #same', html)
+                self.assertIn('#writing-group-2 #same', html)
+                self.assertIn('#writing-group-1 p', html)
+                self.assertNotIn('class="split-post"', (root/'writing/single/index.html').read_text())
+                meta['firstGroupEnabled'] = False
+                source.write_text(json.dumps(meta)+'\n---\n'+ko)
+                writing.build()
+                one = (root/'writing/both/index.html').read_text()
+                self.assertIn('EN ONLY', one)
+                self.assertNotIn('KO ONLY', one)
+                self.assertNotIn('class="split-post"', one)
+                meta['firstGroupEnabled'] = True
+                meta['secondGroup']['enabled'] = False
+                source.write_text(json.dumps(meta)+'\n---\n'+ko)
+                writing.build()
+                one = (root/'writing/both/index.html').read_text()
+                self.assertIn('KO ONLY', one)
+                self.assertNotIn('EN ONLY', one)
+                meta['secondGroup']['enabled'] = True
+                meta['secondGroup']['body'] = '<p><br></p>'
+                source.write_text(json.dumps(meta)+'\n---\n'+ko)
+                writing.build()
+                self.assertNotIn('class="split-post"', (root/'writing/both/index.html').read_text())
+                meta['splitView'] = False
+                source.write_text(json.dumps(meta)+'\n---\n'+ko)
+                writing.build()
+                html = (root/'writing/both/index.html').read_text()
+                self.assertIn('KO ONLY', html)
+                self.assertNotIn('EN ONLY', html)
+                self.assertNotIn('writing-reading-columns', html)
+            finally:
+                writing.ROOT, writing.SOURCE, writing.DEST, writing.TYPOGRAPHY = old
+
+    def test_nested_css_scoping_handles_commas_inside_selectors_and_rejects_imports(self):
+        css = ':is(p,h2),body{color:red}@supports(display:grid){article p{display:grid}}'
+        scoped = writing.scoped_group_css(css, '#writing-group-2')
+        self.assertIn('#writing-group-2 :is(p,h2)', scoped)
+        self.assertIn('#writing-group-2{color:red}', scoped)
+        self.assertIn('#writing-group-2 p', scoped)
+        with self.assertRaises(ValueError):
+            writing.scoped_group_css('@import url(https://example.com)', '#writing-group-2')
+
 if __name__ == '__main__':
     unittest.main()
 

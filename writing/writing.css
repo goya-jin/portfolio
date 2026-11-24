@@ -57,3 +57,26 @@ article column-unit{display:block;flex:1;min-width:0}
 body{font-weight:500}b,strong{font-weight:700}
 
 article hr{height:0;border:0;border-top:1px solid #555;margin:var(--writing-paragraph-gap,1.2em) 0}
+
+/* Opt-in splitView articles: two independent desktop reading regions. */
+.split-post{height:100vh;height:100dvh;overflow:hidden;display:grid;grid-template-rows:auto minmax(0,1fr) auto;padding:16px 24px;gap:12px}
+.split-post>header,.split-post>main,.split-post>footer{max-width:none;width:100%;margin:0;min-width:0}
+.split-post>header{margin:0}.split-post>footer{margin-top:0}.split-post>footer hr{margin:0 0 6px}.split-post>footer p{margin:0}
+.split-post>main{display:flex;flex-direction:column;min-height:0}
+.reading-document{flex:1;min-height:0;display:flex;flex-direction:column}
+.reading-post-heading{flex:none;margin:0 0 10px}.reading-post-heading h1{margin:0}.reading-post-heading p{margin:5px 0 0}
+.writing-reading-columns{flex:1;min-height:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.writing-reading-panel{min-width:0;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;scrollbar-gutter:stable;padding-right:8px}
+.writing-reading-panel+.writing-reading-panel{border-left:1px solid #ddd;padding-left:12px}
+.writing-reading-panel:focus-visible{outline:1px solid #777;outline-offset:-1px}
+.writing-reading-panel>article{min-width:0;max-width:none}
+.split-post nav[aria-label="글 이동"]{display:flex;gap:12px;flex-wrap:wrap;flex:none}.split-post nav[aria-label="글 이동"] p{margin:0}
+.split-post>main>hr{flex:none;width:100%;margin:10px 0}
+@media(max-width:760px){
+ .split-post{display:block;height:auto;overflow:visible;padding:20px clamp(16px,4vw,28px)}
+ .split-post>header{margin-bottom:2em}.split-post>main{display:block}.split-post>footer{margin-top:3em}
+ .reading-document{display:block}.writing-reading-columns{display:block}
+ .writing-reading-panel{overflow:visible;overscroll-behavior-y:auto;scrollbar-gutter:auto;padding:0}
+ .writing-reading-panel+.writing-reading-panel{border-left:0;border-top:1px solid #aaa;padding:24px 0 0;margin-top:32px}
+  .writing-reading-panel>article{scroll-margin-top:20px}
+}

@@ -144,3 +144,51 @@ test('former canvas draft migrates once, including the active paragraph, without
  assert.equal(localStorage.getItem('goya-project-canvas:writing-example'),null);assert.ok(localStorage.getItem('goya-owner-legacy-canvas-backup'));
  const next={...migrated,body:'<p>new continuous edits</p>'};assert.equal(recoverCanvasDraft(next,localStorage).body,next.body);
 });
+
+test('splitView tab switching, draft saving, publishing while the second group is active and reopening keep both documents',async()=>{
+ const f=setup(),screen=render(<Writer/>);await open(screen);
+ await waitFor(()=>assert.equal(screen.getByLabelText('두 그룹 보기').disabled,false));
+ await act(async()=>fireEvent.click(screen.getByLabelText('두 그룹 보기')));
+ const ko='<p>한국어 새 문장</p><figure data-writing-image="true" style="width:37.5%"><img src="https://example.com/ko.jpg"><figcaption>한국어 사진</figcaption></figure>';
+ await act(async()=>screen.container.querySelector('.tiptap').editor.commands.setContent(ko));
+ await act(async()=>fireEvent.click(screen.getByRole('tab',{name:'그룹 2'})));
+ assert.equal(screen.getByRole('tab',{name:'그룹 2'}).getAttribute('aria-selected'),'true');
+ const en='<p>English new paragraph</p><figure data-writing-image="true" style="width:42%"><img src="https://example.com/en.jpg"><figcaption>English photo <span data-photo-source="true">출처: <a href="https://example.com/source">Photo source</a></span></figcaption></figure>';
+ await act(async()=>screen.container.querySelector('.tiptap').editor.commands.setContent(en));
+ await act(async()=>fireEvent.click(screen.getByRole('tab',{name:'그룹 1'})));
+ assert.match(screen.container.querySelector('.tiptap').textContent,/한국어 새 문장/);assert.doesNotMatch(screen.container.querySelector('.tiptap').textContent,/English new paragraph/);
+ await act(async()=>fireEvent.click(screen.getByRole('tab',{name:'그룹 2'})));
+ assert.match(screen.container.querySelector('.tiptap').textContent,/English new paragraph/);
+ await act(async()=>fireEvent.click(screen.getByRole('button',{name:'초안 저장'})));
+ const draft=JSON.parse(localStorage.getItem('goya-owner-draft'));assert.match(draft.body,/한국어 새 문장/);assert.match(draft.secondGroup.body,/English new paragraph/);
+ await act(async()=>fireEvent.click(screen.getByRole('button',{name:'수정 게시'})));
+ const posted=JSON.parse(f.requests.find(r=>r.method==='POST').body.get('post'));assert.equal(posted.splitView,true);assert.match(posted.body,/한국어 새 문장/);assert.match(posted.secondGroup.body,/English new paragraph/);assert.match(posted.secondGroup.body,/https:\/\/example.com\/source/);
+ const savedDraft=localStorage.getItem('goya-owner-draft');cleanup();localStorage.setItem('goya-owner-draft',savedDraft);const reopened=render(<Writer/>);
+ await waitFor(()=>assert.ok(reopened.getByRole('tab',{name:'그룹 1'})));assert.match(reopened.container.querySelector('.tiptap').textContent,/한국어 새 문장/);
+ await act(async()=>fireEvent.click(reopened.getByRole('tab',{name:'그룹 2'})));assert.match(reopened.container.querySelector('.tiptap').textContent,/English new paragraph/);
+});
+test('turning split view off preserves the second group and returns to the first editor',async()=>{
+ setup();localStorage.setItem('goya-owner-draft',JSON.stringify({slug:'example',sha:'a'.repeat(40),title:'Two',date:'2026-11-24',body:'<p>Current KO draft</p>',canvasHtml:'<p>STALE KO</p>',format:'html',splitView:true,secondGroup:{body:'<p>Current EN draft</p>',canvasHtml:'<p>STALE EN</p>',css:''}}));
+ const screen=render(<Writer/>);await waitFor(()=>assert.ok(screen.getByRole('tab',{name:'그룹 2'})));
+ assert.match(screen.container.querySelector('.tiptap').textContent,/Current KO draft/);
+ await act(async()=>fireEvent.click(screen.getByRole('tab',{name:'그룹 2'})));assert.match(screen.container.querySelector('.tiptap').textContent,/Current EN draft/);
+ await act(async()=>screen.container.querySelector('.tiptap').editor.commands.insertContent(' Last edit'));
+ await act(async()=>fireEvent.click(screen.getByLabelText('두 그룹 보기')));
+ assert.equal(screen.queryByRole('tab',{name:'그룹 2'}),null);assert.match(screen.container.querySelector('.tiptap').textContent,/Current KO draft/);
+ await act(async()=>fireEvent.click(screen.getByRole('button',{name:'초안 저장'})));
+ const draft=JSON.parse(localStorage.getItem('goya-owner-draft'));assert.equal(draft.splitView,false);assert.match(draft.secondGroup.body,/Last edit/);
+});
+
+test('group visibility is independent and hiding the active image group preserves its content',async()=>{
+ const f=setup();localStorage.setItem('goya-owner-draft',JSON.stringify({slug:'example',sha:'a'.repeat(40),title:'Independent groups',date:'2026-11-24',body:'<p>Only text here</p>',format:'html',splitView:true,secondGroup:{body:'<figure data-writing-image="true"><img src="https://example.com/photo.jpg"><figcaption>Source retained</figcaption></figure>',css:''}}));
+ const screen=render(<Writer/>);await waitFor(()=>assert.ok(screen.getByRole('tab',{name:'그룹 2'})));
+ await act(async()=>fireEvent.click(screen.getByRole('tab',{name:'그룹 2'})));
+ await act(async()=>fireEvent.click(screen.getByLabelText('그룹 2 공개')));
+ await act(async()=>fireEvent.click(screen.getByRole('button',{name:'수정 게시'})));
+ await waitFor(()=>assert.ok(f.requests.find(r=>r.method==='POST')));
+ const posted=JSON.parse(f.requests.find(r=>r.method==='POST').body.get('post'));assert.equal(posted.secondGroup.enabled,false);assert.match(posted.secondGroup.body,/photo.jpg/);assert.match(posted.body,/Only text here/);
+ await act(async()=>fireEvent.click(screen.getByLabelText('그룹 2 공개')));
+ await act(async()=>fireEvent.click(screen.getByLabelText('그룹 1 공개')));
+ await act(async()=>fireEvent.click(screen.getByRole('button',{name:'초안 저장'})));
+ const draft=JSON.parse(localStorage.getItem('goya-owner-draft'));assert.equal(draft.firstGroupEnabled,false);assert.equal(draft.secondGroup.enabled,true);assert.match(draft.secondGroup.body,/Source retained/);
+});
