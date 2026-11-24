@@ -1,5 +1,5 @@
 'use client';
-import {useRef,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import sample from './sample.json';
 const FAMILY='Portfolio Neue Preview';
 const medium=['NeueHaasGroteskTextPro65Medium','NeueHaasGroteskTextPro-65Medium','NHaasGroteskTXPro-65Md','NeueHaasGroteskTextPro-65Md','Neue Haas Grotesk Text Pro 65 Medium','Neue Haas Grotesk Text Pro Medium'];
@@ -16,6 +16,7 @@ export default function FontPreview(){
   if(mediumReady)doc.body.style.fontFamily='"'+FAMILY+'","Helvetica Neue",Helvetica,Arial,sans-serif';
   setStatus(mediumReady?'loaded':'missing');
  }
+ useEffect(()=>{if(right.current?.contentDocument?.readyState==='complete')loadFont()},[count]);
  const ready=status==='loaded';
  return <main style={{maxWidth:'none',padding:'22px',font:'14px/1.5 Helvetica,Arial,sans-serif'}}>
   <h1 style={{fontSize:20}}>포트폴리오 폰트 비교</h1><p>Jeongin 사이트 기준: <strong>11px · 줄간격 12px · 굵기 500</strong></p>
