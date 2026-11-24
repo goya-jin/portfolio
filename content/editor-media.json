@@ -1710,13 +1710,18 @@
     "name": "flux_krea_00013_ 2.PNG"
   },
   {
-    "name": "img-2.png",
+    "ref": "image343",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/a8719f1a69f54f58a1679f31183b10b4.png",
-    "ref": "image343"
+    "name": "img-2.png"
   },
   {
-    "name": "스크린샷_2024-09-29_오후_6.43.39.png",
+    "ref": "image344",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/9fabaf03a4de4b69857994522c50be47.png",
-    "ref": "image344"
+    "name": "스크린샷_2024-09-29_오후_6.43.39.png"
+  },
+  {
+    "name": "C0290022-1868_darwin_pigeon_breeds_illustration.jpg",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/e033f90de0f747f3ac6657c9a654cc3a.jpg",
+    "ref": "image345"
   }
 ]
