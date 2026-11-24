@@ -36,3 +36,10 @@ test('pasted iframe source text becomes a provider player without executing arbi
  assert.equal(load(sanitizeRichHTML('<p>&lt;iframe src="https://evil.example/"&gt;&lt;/iframe&gt;</p>'))('iframe').length,0);
  assert.ok(sanitizeRichHTML('<p>설명: &lt;iframe src="https://www.youtube.com/embed/9jt_q1jM89Y"&gt;&lt;/iframe&gt;</p>').includes('설명:'));
 });
+
+test('continuous editor canvas serialization restores social/media sources and sanitizes them before publication',()=>{
+ const source='<blockquote class="twitter-tweet"><p>Keep social caption</p><a href="https://x.com/example/status/123">source</a></blockquote><script>alert(1)</script>';
+ const escaped=source.replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+ const post=parsePost(serializePost({title:'source',date:'2026-11-24',format:'html',canvas:true,css:'',body:'<p>Before</p><div data-writing-embed="tweet" data-source="'+escaped+'"></div><p>After</p>'},[]));
+ assert.match(post.body,/twitter-tweet/);assert.match(post.body,/Keep social caption/);assert.match(post.body,/https:\/\/x.com\/example\/status\/123/);assert.doesNotMatch(post.body,/<script|data-source/);assert.ok(post.body.indexOf('Before')<post.body.indexOf('twitter-tweet'));assert.ok(post.body.indexOf('After')>post.body.indexOf('twitter-tweet'));
+});

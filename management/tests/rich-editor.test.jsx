@@ -128,3 +128,9 @@ test('pasting YouTube iframe code inserts an actual video at the caret and survi
  await act(async()=>{editor.commands.setTextSelection(2);fireEvent.paste(box,{clipboardData:{files:[],getData:type=>type==='text/plain'?'<iframe width="560" height="315" src="https://www.youtube.com/embed/9jt_q1jM89Y" allowfullscreen></iframe>':''}})});
  assert.ok(html.includes('<iframe'));assert.ok(!html.includes('&lt;iframe'));assert.ok(html.indexOf('앞')<html.indexOf('<iframe'));assert.ok(html.indexOf('<iframe')<html.indexOf('뒤'));assert.ok(sanitizeRichHTML(html).includes('https://www.youtube.com/embed/9jt_q1jM89Y'));cleanup();
 });
+
+test('continuous Writing schema preserves optional columns, inline styles, IDs, photos and tweet source',()=>{
+ const input='<p id="intro" style="font-size:18px">앞 <span style="color:rgb(255, 0, 0)">강조</span></p><column-set style="display:flex;gap:24px"><column-unit><p>왼쪽</p></column-unit><column-unit><p>오른쪽</p></column-unit></column-set><figure><img src="https://example.com/photo.jpg"><figcaption>캡션</figcaption></figure><blockquote class="twitter-tweet"><p>tweet text</p><a href="https://x.com/example/status/123">source</a></blockquote><p>뒤</p>';
+ const editor=new Editor({extensions:editorExtensions(true),content:input});const html=editor.getHTML();
+ assert.match(html,/<column-set/);assert.match(html,/<column-unit/);assert.match(html,/gap: 24px/);assert.match(html,/id="intro"/);assert.match(html,/font-size: 18px/);assert.match(html,/캡션/);assert.match(html,/data-writing-embed="tweet"/);assert.match(html,/tweet text/);assert.match(html,/강조/);editor.destroy();
+});

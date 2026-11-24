@@ -46,4 +46,4 @@ export function writingCanvasHTML(body,format='html'){
  $('img,video,audio,source').each((_,el)=>{const value=$(el).attr('src')||'';if(value.startsWith('../../assets/'))$(el).attr('src',SITE+value.slice(6));else if(value.startsWith('assets/'))$(el).attr('src',SITE+value)});
  return $.html();
 }
-export function storedCanvasHTML(body){const $=load(cleanCanvasHTML(body),null,false);$('img,a,video,audio,source').each((_,el)=>{const key=el.name==='a'?'href':'src',value=$(el).attr(key)||'';if(value.startsWith(SITE+'assets/'))$(el).attr(key,'../../'+value.slice(SITE.length))});return $.html()}
+export function storedCanvasHTML(body){const source=load(body,null,false);source('[data-writing-embed="tweet"],[data-writing-embed="media"]').each((_,el)=>source(el).replaceWith(source(el).attr('data-source')||''));const $=load(cleanCanvasHTML(source.html()),null,false);$('img,a,video,audio,source').each((_,el)=>{const key=el.name==='a'?'href':'src',value=$(el).attr(key)||'';if(value.startsWith(SITE+'assets/'))$(el).attr(key,'../../'+value.slice(SITE.length))});return $.html()}
