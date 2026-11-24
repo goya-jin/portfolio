@@ -15,7 +15,7 @@ export default function ProjectCanvas({document:source,path,sha,disabled=false,o
   let alive=true,instance,timer,dirty=false,initializing=true;
   (async()=>{
    const {default:grapesjs}=await import('grapesjs');if(!alive)return;
-   instance=grapesjs.init({container:host.current,height:'72vh',width:'auto',storageManager:false,noticeOnUnload:false,fromElement:false,allowScripts:false,avoidInlineStyle:false,panels:{defaults:[]},assetManager:{custom:true},styleManager:{sectors:[]},richTextEditor:{actions:[]},canvas:{styles:source.styles||[]},deviceManager:{devices:[{id:'desktop',name:'Desktop',width:''},{id:'mobile',name:'Mobile',width:'390px',widthMedia:'760px'}]},plugins:[installCanvasTypes]});
+   instance=grapesjs.init({container:host.current,height:'72vh',width:'auto',storageManager:false,noticeOnUnload:false,fromElement:false,allowScripts:false,avoidInlineStyle:false,panels:{defaults:[]},assetManager:{custom:true},styleManager:{sectors:[]},richTextEditor:{actions:[]},canvas:{styles:[...new Set(['https://use.typekit.net/ubo8ofm.css',...(source.styles||[]).map(url=>/\/(?:styles|writing)\.css(?:\?|$)/.test(url)?url.split('?')[0]+'?v=neue-web-20261124':url)])]},deviceManager:{devices:[{id:'desktop',name:'Desktop',width:''},{id:'mobile',name:'Mobile',width:'390px',widthMedia:'760px'}]},plugins:[installCanvasTypes]});
    editor.current=instance;
    instance.setStyle(source.customCSS||'');instance.setComponents(source.body);
    const changed=()=>{if(initializing||!alive)return;dirty=true;callbacks.current.onDirty?.();clearTimeout(timer);timer=setTimeout(()=>{
@@ -35,7 +35,7 @@ export default function ProjectCanvas({document:source,path,sha,disabled=false,o
    instance.on('canvas:frame:load',()=>{
     const doc=instance.Canvas.getDocument();if(!doc)return;
     let style=doc.getElementById('portfolio-document-styles');if(!style){style=doc.createElement('style');style.id='portfolio-document-styles';doc.head.append(style)}
-    style.textContent=(source.css||'')+'\nbody{margin:0;background:#fff}main img{cursor:pointer}p:empty{min-height:1.4em}';
+    style.textContent=(source.css||'')+'\nbody{margin:0;background:#fff;font-family:"neue-haas-grotesk-text",Helvetica,Arial,sans-serif;font-weight:500}b,strong{font-weight:700}main img{cursor:pointer}p:empty{min-height:1.4em}';
     let base=doc.querySelector('base');if(!base){base=doc.createElement('base');base.href=BASE;doc.head.prepend(base)}
     doc.addEventListener('click',e=>{if(e.target.closest('a'))e.preventDefault()});
     doc.addEventListener('paste',e=>{const photos=Array.from(e.clipboardData?.files||[]).filter(f=>f.type.startsWith('image/'));if(photos.length){e.preventDefault();upload(photos,true)}});

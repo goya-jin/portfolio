@@ -1,7 +1,8 @@
+@import url("https://use.typekit.net/ubo8ofm.css");
 /* Match portfolio typography while preserving the writing layout. */
 html { color-scheme: light; font-size: var(--writing-font-size,11px); }
 
-body { margin: 0; padding: 24px clamp(20px, 4vw, 48px); background: white; color: #262626; font-family: Helvetica, Arial, sans-serif; font-size: 1rem; font-weight: 400; line-height: 1.5; overflow-wrap: anywhere; }
+body { margin: 0; padding: 24px clamp(20px, 4vw, 48px); background: white; color: #262626; font-family: "neue-haas-grotesk-text", Helvetica, Arial, sans-serif; font-size: 1rem; font-weight: 400; line-height: 1.5; overflow-wrap: anywhere; }
 header, main, footer { max-width: 110ch; margin-inline: 0; }
 header { margin-bottom: 2em; }
 header > p { font-size: 1rem; font-weight: 600; }
@@ -51,3 +52,6 @@ article iframe[src*="youtube.com/embed/"],article iframe[src*="youtube-nocookie.
 article column-set{display:flex;gap:12px;width:100%;align-items:flex-start}
 article column-unit{display:block;flex:1;min-width:0}
 @media(max-width:760px){article column-set{flex-direction:column}}
+
+/* Same family and weights as the portfolio. */
+body{font-weight:500}b,strong{font-weight:700}

@@ -2,7 +2,7 @@
 import {useEffect,useRef,useState} from 'react';
 import {PREVIEW_FAMILY,loadLocalNeue,matchingTextFonts} from '../../lib/local-font-preview.mjs';
 import sample from './sample.json';
-function html(target){return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'+sample.styles.map(href=>'<link rel="stylesheet" href="'+href+'">').join('')+'<style>'+sample.css+(target?'html{font-size:11px!important}body{font-size:11px!important;font-weight:500!important;line-height:12px!important}body *{font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;font-weight:inherit!important}body b,body strong{font-weight:700!important}':'')+'</style><base href="https://goya-jin.github.io/portfolio/"></head><body>'+sample.body+'</body></html>'}
+function html(target){return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'+sample.styles.map(href=>'<link rel="stylesheet" href="'+href+'">').join('')+'<style>'+sample.css+(target?'html{font-size:11px!important}body{font-size:11px!important;font-weight:500!important;line-height:12px!important}body *{font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;font-weight:inherit!important}body b,body strong{font-weight:700!important}':'body{font-family:Helvetica,Arial,sans-serif!important}')+'</style><base href="https://goya-jin.github.io/portfolio/"></head><body>'+sample.body+'</body></html>'}
 function blockLinks(doc){doc?.addEventListener('click',e=>{if(e.target.closest?.('a'))e.preventDefault()})}
 export default function FontPreview(){
  const right=useRef(null),knownFonts=useRef([]),request=useRef(0);
@@ -37,7 +37,7 @@ export default function FontPreview(){
  };
  return <main style={{maxWidth:'none',padding:'22px',font:'14px/1.5 Helvetica,Arial,sans-serif'}}>
   <h1 style={{fontSize:20}}>포트폴리오 폰트 비교</h1><p>미리보기 설정: <strong>11px · 줄간격 12px · 굵기 500</strong></p>
-  <div style={{display:'flex',gap:8,flexWrap:'wrap',margin:'16px 0'}}><button type="button" aria-pressed={active==='current'} onClick={()=>setActive('current')}>현재 Helvetica</button><button type="button" aria-pressed={active==='neue'} onClick={()=>setActive('neue')}>Neue Haas Grotesk</button><button type="button" onClick={()=>{setCount(n=>n+1);setStatus('checking')}}>폰트 다시 확인</button>{!ready&&<button type="button" onClick={findFonts}>브라우저에서 폰트 찾기</button>}</div>
+  <div style={{display:'flex',gap:8,flexWrap:'wrap',margin:'16px 0'}}><button type="button" aria-pressed={active==='current'} onClick={()=>setActive('current')}>기존 Helvetica</button><button type="button" aria-pressed={active==='neue'} onClick={()=>setActive('neue')}>Neue Haas Grotesk</button><button type="button" onClick={()=>{setCount(n=>n+1);setStatus('checking')}}>폰트 다시 확인</button>{!ready&&<button type="button" onClick={findFonts}>브라우저에서 폰트 찾기</button>}</div>
   {messages[status]&&<p role="status" style={{padding:12,background:'#f5f5f5'}}>{messages[status]}</p>}
   {!ready&&<p style={{color:'#666',fontSize:12}}>‘브라우저에서 폰트 찾기’는 브라우저의 글꼴 접근 확인창을 띄울 수 있습니다. 폰트 이름만 이 기기에서 확인하며 파일을 업로드하지 않습니다.</p>}
   {detected.length>0&&<details><summary>브라우저에서 확인한 폰트</summary><ul>{detected.map((f,i)=><li key={i}>{f.name} · {f.style}</li>)}</ul></details>}
