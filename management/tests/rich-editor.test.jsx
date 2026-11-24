@@ -174,3 +174,14 @@ test('photo drag commits one width change and pointer cancellation restores the 
  await act(async()=>{fireEvent.pointerDown(handle,{button:0,clientX:500});fireEvent.pointerMove(handle,{clientX:250});fireEvent.pointerCancel(handle,{clientX:250})});
  assert.equal(changes,1);assert.equal(figure.style.width,'50%');assert.match(html,/Keep caption/);
 });
+
+test('divider toolbar splits at the caret, continues text below and survives publishing/reopening',async()=>{
+ let html='';const screen=render(<RichEditor value='<p>앞 문장뒤 문장</p>' onChange={value=>{html=value}}/>);
+ await waitFor(()=>assert.ok(screen.getByRole('textbox',{name:'내용'})));
+ const editor=screen.container.querySelector('.tiptap').editor;
+ await act(async()=>{editor.commands.setTextSelection(5);fireEvent.mouseDown(screen.getByRole('button',{name:'구분선 넣기'}));fireEvent.click(screen.getByRole('button',{name:'구분선 넣기'}))});
+ let doc=new DOMParser().parseFromString(html,'text/html');assert.equal(doc.querySelectorAll('hr').length,1);assert.equal(doc.querySelector('hr').previousElementSibling.textContent,'앞 문장');assert.equal(doc.querySelector('hr').nextElementSibling.textContent,'뒤 문장');
+ await act(async()=>editor.commands.insertContent('이어서 '));
+ const stored=sanitizeRichHTML(html),reopened=new Editor({extensions:editorExtensions(),content:editorHTML(stored,'html')});
+ doc=new DOMParser().parseFromString(reopened.getHTML(),'text/html');assert.equal(doc.querySelectorAll('hr').length,1);assert.match(doc.querySelector('hr').nextElementSibling.textContent,/이어서 뒤 문장/);reopened.destroy();
+});

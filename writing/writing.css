@@ -55,3 +55,5 @@ article column-unit{display:block;flex:1;min-width:0}
 
 /* Same family and weights as the portfolio. */
 body{font-weight:500}b,strong{font-weight:700}
+
+article hr{height:0;border:0;border-top:1px solid #555;margin:var(--writing-paragraph-gap,1.2em) 0}
