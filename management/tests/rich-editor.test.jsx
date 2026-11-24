@@ -134,3 +134,43 @@ test('continuous Writing schema preserves optional columns, inline styles, IDs, 
  const editor=new Editor({extensions:editorExtensions(true),content:input});const html=editor.getHTML();
  assert.match(html,/<column-set/);assert.match(html,/<column-unit/);assert.match(html,/gap: 24px/);assert.match(html,/id="intro"/);assert.match(html,/font-size: 18px/);assert.match(html,/캡션/);assert.match(html,/data-writing-embed="tweet"/);assert.match(html,/tweet text/);assert.match(html,/강조/);editor.destroy();
 });
+
+test('custom photo percentages survive repeated save/reopen cycles with caption and source intact',()=>{
+ const e=new Editor({extensions:editorExtensions(),content:'<p>before</p>'});
+ e.commands.insertContent({type:'writingImage',attrs:{src:'https://example.com/photo.jpg',caption:'Figure 1. Caption.',sourceName:'Google Research',sourceUrl:'https://research.google/blog/?a=1&b=2',width:37.5}});
+ for(let i=0;i<3;i++){
+  const html=sanitizeRichHTML(e.getHTML()),doc=new DOMParser().parseFromString(html,'text/html');
+  assert.equal(doc.querySelector('figure').style.width,'37.5%');
+  assert.equal(doc.querySelector('figcaption a').getAttribute('href'),'https://research.google/blog/?a=1&b=2');
+  assert.equal(doc.querySelector('figcaption a').textContent,'Google Research');
+  e.commands.setContent(editorHTML(html,'html'));
+  const photo=e.state.doc.content.content.find(n=>n.type.name==='writingImage');assert.equal(photo.attrs.width,37.5);assert.equal(photo.attrs.caption,'Figure 1. Caption.');
+ }
+ e.destroy();
+});
+test('photo size range, direct input and corner keyboard control change only the width',async()=>{
+ let html='';
+ const value='<figure data-writing-image="true" style="width:75%"><img src="https://example.com/photo.jpg" alt="photo"><figcaption>Caption <span data-photo-source="true">출처: <a href="https://example.com/source">Original source</a></span></figcaption></figure>';
+ const screen=render(<RichEditor value={value} onChange={next=>{html=next}}/>);
+ await waitFor(()=>assert.ok(screen.getByLabelText('사진 너비 (%)')));
+ await act(async()=>fireEvent.change(screen.getByLabelText('사진 너비 (%)'),{target:{value:'42.5'}}));
+ assert.equal(new DOMParser().parseFromString(html,'text/html').querySelector('figure').style.width,'42.5%');
+ await act(async()=>fireEvent.change(screen.getByLabelText('사진 너비 조절'),{target:{value:'61'}}));
+ assert.equal(new DOMParser().parseFromString(html,'text/html').querySelector('figure').style.width,'61%');
+ await act(async()=>fireEvent.keyDown(screen.getByRole('slider',{name:'사진 모서리 크기 조절'}),{key:'ArrowLeft'}));
+ const doc=new DOMParser().parseFromString(html,'text/html');assert.equal(doc.querySelector('figure').style.width,'60%');assert.equal(doc.querySelector('figcaption a').textContent,'Original source');assert.equal(doc.querySelector('figcaption a').getAttribute('href'),'https://example.com/source');assert.match(doc.querySelector('figcaption').textContent,/Caption/);
+});
+test('photo drag commits one width change and pointer cancellation restores the original',async()=>{
+ dom.window.PointerEvent=dom.window.MouseEvent;
+ let html='',changes=0;
+ const screen=render(<RichEditor value={'<figure data-writing-image="true" style="width:75%"><img src="https://example.com/photo.jpg"><figcaption>Keep caption</figcaption></figure>'} onChange={next=>{html=next;changes++}}/>);
+ await waitFor(()=>assert.ok(screen.getByRole('slider',{name:'사진 모서리 크기 조절'})));
+ const handle=screen.getByRole('slider',{name:'사진 모서리 크기 조절'}),figure=handle.closest('figure');
+ figure.getBoundingClientRect=()=>({...rect(),width:750});figure.parentElement.getBoundingClientRect=()=>({...rect(),width:1000});
+ await act(async()=>{fireEvent.pointerDown(handle,{button:0,clientX:750});fireEvent.pointerMove(handle,{clientX:500})});
+ assert.equal(changes,0);assert.equal(figure.style.width,'50%');
+ await act(async()=>fireEvent.pointerUp(handle,{clientX:500}));assert.equal(changes,1);assert.equal(new DOMParser().parseFromString(html,'text/html').querySelector('figure').style.width,'50%');
+ figure.getBoundingClientRect=()=>({...rect(),width:500});
+ await act(async()=>{fireEvent.pointerDown(handle,{button:0,clientX:500});fireEvent.pointerMove(handle,{clientX:250});fireEvent.pointerCancel(handle,{clientX:250})});
+ assert.equal(changes,1);assert.equal(figure.style.width,'50%');assert.match(html,/Keep caption/);
+});
