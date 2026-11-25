@@ -1870,8 +1870,13 @@
     "name": "wedding2.jpg"
   },
   {
-    "name": "wedding1.jpg",
+    "ref": "image375",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/587592cf49154e47bf74220520417eaf.jpg",
-    "ref": "image375"
+    "name": "wedding1.jpg"
+  },
+  {
+    "name": "wedding2.jpg",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/0acf90ae27c347a5bab0c02d4d1244e4.jpg",
+    "ref": "image376"
   }
 ]
