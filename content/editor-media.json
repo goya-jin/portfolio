@@ -1745,13 +1745,18 @@
     "name": "IMG_6485.jpg"
   },
   {
-    "name": "original_cba0d33b04c207e193e861764b48f8b3.png",
+    "ref": "image350",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/af88fdedcd4d4a4b835cd671c638dfa9.png",
-    "ref": "image350"
+    "name": "original_cba0d33b04c207e193e861764b48f8b3.png"
   },
   {
-    "name": "cycle_representation-24efe2cc73b0b5e0ca32a158eed95162.png",
+    "ref": "image351",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/14281c2a12434554b3517f4a702e16e8.png",
-    "ref": "image351"
+    "name": "cycle_representation-24efe2cc73b0b5e0ca32a158eed95162.png"
+  },
+  {
+    "name": "original_cba0d33b04c207e193e861764b48f8b3.png",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/197249f01c7d4b55afcfff1e532feefb.png",
+    "ref": "image352"
   }
 ]
