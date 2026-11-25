@@ -1840,13 +1840,23 @@
     "name": "leftoversashley-willamshakespear.jpg"
   },
   {
-    "name": "leftoversdisme (1).jpg",
+    "ref": "image369",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/67103f2eda2b4e5793f9d37196b6664f.jpg",
-    "ref": "image369"
+    "name": "leftoversdisme (1).jpg"
   },
   {
-    "name": "leftoversdrobu (1).jpg",
+    "ref": "image370",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/12a4318af2224810b6dd203601db5763.jpg",
-    "ref": "image370"
+    "name": "leftoversdrobu (1).jpg"
+  },
+  {
+    "name": "leftovers1.jpg",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/90b49da5e5ba4e31802ec238351a894e.jpg",
+    "ref": "image371"
+  },
+  {
+    "name": "leftoverswill-you.jpg",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/05bb73b52d1e4c04a3eb7fc4d12f6e4f.jpg",
+    "ref": "image372"
   }
 ]
