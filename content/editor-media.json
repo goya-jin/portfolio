@@ -1775,8 +1775,13 @@
     "name": "스크린샷 2025-06-08 오후 4.50.27.jpg"
   },
   {
-    "name": "plastic cosmos.png",
+    "ref": "image356",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/ae8293bda3da4e7db4e1ac2cb2e53fe8.png",
-    "ref": "image356"
+    "name": "plastic cosmos.png"
+  },
+  {
+    "name": "plastic pet.png",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/d93389677a2044bdb34b50c705f09e0f.png",
+    "ref": "image357"
   }
 ]
