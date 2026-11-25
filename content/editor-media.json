@@ -1820,13 +1820,23 @@
     "name": "leftoversdisme (1).jpg"
   },
   {
-    "name": "leftoversDemi---Echo.jpg",
+    "ref": "image365",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/6963a3c89af34543b564ad4189c6c00e.jpg",
-    "ref": "image365"
+    "name": "leftoversDemi---Echo.jpg"
   },
   {
-    "name": "leftovers-2025-10-24--1.10.25.jpg",
+    "ref": "image366",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/1a261bf8e54f4bbd96cb08fa6837ef5e.jpg",
-    "ref": "image366"
+    "name": "leftovers-2025-10-24--1.10.25.jpg"
+  },
+  {
+    "name": "leftoversHetheti (1).jpg",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/8c89bdcac5b24324859b4ed7126251ed.jpg",
+    "ref": "image367"
+  },
+  {
+    "name": "leftoversashley-willamshakespear.jpg",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/93618e5d080a47c595e41e6603bce674.jpg",
+    "ref": "image368"
   }
 ]
