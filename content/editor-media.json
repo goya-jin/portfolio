@@ -1805,18 +1805,28 @@
     "name": "IMG_4897 2.PNG"
   },
   {
-    "name": "leftoversHetheti (1).jpg",
+    "ref": "image362",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/1ee4587e5cdb44cda95172510ff9e9b5.jpg",
-    "ref": "image362"
+    "name": "leftoversHetheti (1).jpg"
   },
   {
-    "name": "leftoversashley-willamshakespear.jpg",
+    "ref": "image363",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/cfe1598e4b1448f7a553a46520094c53.jpg",
-    "ref": "image363"
+    "name": "leftoversashley-willamshakespear.jpg"
   },
   {
-    "name": "leftoversdisme (1).jpg",
+    "ref": "image364",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/d218d222353b449a8d68eeabfe7d2812.jpg",
-    "ref": "image364"
+    "name": "leftoversdisme (1).jpg"
+  },
+  {
+    "name": "leftoversDemi---Echo.jpg",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/6963a3c89af34543b564ad4189c6c00e.jpg",
+    "ref": "image365"
+  },
+  {
+    "name": "leftovers-2025-10-24--1.10.25.jpg",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/1a261bf8e54f4bbd96cb08fa6837ef5e.jpg",
+    "ref": "image366"
   }
 ]
