@@ -1800,8 +1800,23 @@
     "name": "wdi-logo.png"
   },
   {
-    "name": "IMG_4897 2.PNG",
+    "ref": "image361",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/b308f44fbc6b4b5882089ee4eed4c451.png",
-    "ref": "image361"
+    "name": "IMG_4897 2.PNG"
+  },
+  {
+    "name": "leftoversHetheti (1).jpg",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/1ee4587e5cdb44cda95172510ff9e9b5.jpg",
+    "ref": "image362"
+  },
+  {
+    "name": "leftoversashley-willamshakespear.jpg",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/cfe1598e4b1448f7a553a46520094c53.jpg",
+    "ref": "image363"
+  },
+  {
+    "name": "leftoversdisme (1).jpg",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/d218d222353b449a8d68eeabfe7d2812.jpg",
+    "ref": "image364"
   }
 ]
