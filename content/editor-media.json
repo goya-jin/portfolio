@@ -1850,13 +1850,18 @@
     "name": "leftoversdrobu (1).jpg"
   },
   {
-    "name": "leftovers1.jpg",
+    "ref": "image371",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/90b49da5e5ba4e31802ec238351a894e.jpg",
-    "ref": "image371"
+    "name": "leftovers1.jpg"
   },
   {
-    "name": "leftoverswill-you.jpg",
+    "ref": "image372",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/05bb73b52d1e4c04a3eb7fc4d12f6e4f.jpg",
-    "ref": "image372"
+    "name": "leftoverswill-you.jpg"
+  },
+  {
+    "name": "wedding1.jpg",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/95267576505d42ca942ce1c7c3ea9857.jpg",
+    "ref": "image373"
   }
 ]
