@@ -1735,13 +1735,23 @@
     "name": "Origin_of_Species_title_page.jpg"
   },
   {
-    "name": "스크린샷_2024-09-29_오전_12.20.38.png",
+    "ref": "image348",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/fed9a874a2ee4b4886af9e5bc90e041e.png",
-    "ref": "image348"
+    "name": "스크린샷_2024-09-29_오전_12.20.38.png"
   },
   {
-    "name": "IMG_6485.jpg",
+    "ref": "image349",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/0a5e3904a86e4423a51be981aec78385.jpg",
-    "ref": "image349"
+    "name": "IMG_6485.jpg"
+  },
+  {
+    "name": "original_cba0d33b04c207e193e861764b48f8b3.png",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/af88fdedcd4d4a4b835cd671c638dfa9.png",
+    "ref": "image350"
+  },
+  {
+    "name": "cycle_representation-24efe2cc73b0b5e0ca32a158eed95162.png",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/14281c2a12434554b3517f4a702e16e8.png",
+    "ref": "image351"
   }
 ]
