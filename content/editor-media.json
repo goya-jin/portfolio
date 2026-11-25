@@ -1770,8 +1770,13 @@
     "name": "스크린샷 2025-06-08 오후 4.46.20.jpg"
   },
   {
-    "name": "스크린샷 2025-06-08 오후 4.50.27.jpg",
+    "ref": "image355",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/d9cebb06c3e440c7a0085a0ce59371d4.jpg",
-    "ref": "image355"
+    "name": "스크린샷 2025-06-08 오후 4.50.27.jpg"
+  },
+  {
+    "name": "plastic cosmos.png",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/ae8293bda3da4e7db4e1ac2cb2e53fe8.png",
+    "ref": "image356"
   }
 ]
