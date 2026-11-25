@@ -5,5 +5,5 @@ export function withGroupContent(post,group,content){
  return group==='second'?{...post,secondGroup:{...groupContent(post,'second'),...content,format:'html',canvas:true}}:{...post,...content};
 }
 export function prepareEditorPost(post){
- return {...post,body:post.canvasHtml||post.editorHtml||post.body||'<p></p>',...(post.secondGroup?{secondGroup:{...post.secondGroup,body:post.secondGroup.canvasHtml||post.secondGroup.editorHtml||post.secondGroup.body||'<p></p>'}}:{})};
+ return {...post,body:post.editorHtml||post.canvasHtml||post.body||'<p></p>',...(post.secondGroup?{secondGroup:{...post.secondGroup,body:post.secondGroup.editorHtml||post.secondGroup.canvasHtml||post.secondGroup.body||'<p></p>'}}:{})};
 }
