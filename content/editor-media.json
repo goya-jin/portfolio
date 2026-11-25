@@ -1795,8 +1795,13 @@
     "name": "-2025-12-02--6.31.18-2.jpg"
   },
   {
-    "name": "wdi-logo.png",
+    "ref": "image360",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/9bdbcd182b7b4a1eb160b6dcc718f270.png",
-    "ref": "image360"
+    "name": "wdi-logo.png"
+  },
+  {
+    "name": "IMG_4897 2.PNG",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/b308f44fbc6b4b5882089ee4eed4c451.png",
+    "ref": "image361"
   }
 ]
