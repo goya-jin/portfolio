@@ -1755,8 +1755,13 @@
     "name": "cycle_representation-24efe2cc73b0b5e0ca32a158eed95162.png"
   },
   {
-    "name": "original_cba0d33b04c207e193e861764b48f8b3.png",
+    "ref": "image352",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/197249f01c7d4b55afcfff1e532feefb.png",
-    "ref": "image352"
+    "name": "original_cba0d33b04c207e193e861764b48f8b3.png"
+  },
+  {
+    "name": "cycle_representation-24efe2cc73b0b5e0ca32a158eed95162.png",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/7bc951d3217f4dc58cc623759485042b.png",
+    "ref": "image353"
   }
 ]
