@@ -1860,8 +1860,13 @@
     "name": "leftoverswill-you.jpg"
   },
   {
-    "name": "wedding1.jpg",
+    "ref": "image373",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/95267576505d42ca942ce1c7c3ea9857.jpg",
-    "ref": "image373"
+    "name": "wedding1.jpg"
+  },
+  {
+    "name": "wedding2.jpg",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/479c33d5c9144e418af3575695d60c17.jpg",
+    "ref": "image374"
   }
 ]
