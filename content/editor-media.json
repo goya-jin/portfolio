@@ -1785,8 +1785,13 @@
     "name": "plastic pet.png"
   },
   {
-    "name": "cycle_representation-24efe2cc73b0b5e0ca32a158eed95162.png",
+    "ref": "image358",
     "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/4ccdbb64dc5946c7a9cc4e483e609c4e.png",
-    "ref": "image358"
+    "name": "cycle_representation-24efe2cc73b0b5e0ca32a158eed95162.png"
+  },
+  {
+    "name": "-2025-12-02--6.31.18-2.jpg",
+    "src": "https://goya-jin.github.io/portfolio/assets/writing/uploads/00a0ccea2afb4b45897e4a6e761c5184.jpg",
+    "ref": "image359"
   }
 ]
